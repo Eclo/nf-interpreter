@@ -691,12 +691,13 @@ jobs:
     displayName: Install .NET SDK
     inputs:
       packageType: sdk
-      version: 5.0.300
+      version: 6.x
 
   - task: DotNetCoreCLI@2
     displayName: Restore NuGet packages
     inputs:
       command: restore
+      restoreArguments: '--locked-mode'
       verbosityRestore: minimal
       projects: targets\netcore\nanoCLR.sln
       feedsToUse: select
@@ -710,17 +711,21 @@ jobs:
       msbuildArgs: '/p:PublicRelease=true'
       configuration: 'Release'
 
-  - task: VSBuild@1
-    displayName: Build .NET Core target
-    inputs:
-      solution: 'targets\netcore\nanoCLR.sln'
-      platform: 'x86'
-      msbuildArgs: '/p:PublicRelease=true'
-      configuration: 'Release'
+  - script: dotnet build -c 'Release' /p:platform='x86' /p:PublicRelease=true --no-restore /t:build,pack
+    displayName: Build NuGet package
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
 
   - task: DotNetCoreCLI@2
     displayName: Install SignTool tool
-    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['System.PullRequest.PullRequestId'], '')
+      )
     inputs:
       command: custom
       custom: tool
@@ -776,7 +781,7 @@ jobs:
     inputs:
       sourceFolder: $(Build.SourcesDirectory)
       Contents: |
-        **\nanoFramework.nanoCLR.Win32*.nupkg
+        **\nanoFramework.nanoCLR.*.nupkg
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
       flattenFolders: true
       ignoreMakeDirErrors: true
@@ -801,8 +806,8 @@ jobs:
       --filelist "$(Build.Repository.LocalPath)\config\filelist.txt" `
       --user "$(SignClientUser)" `
       --secret '$(SignClientSecret)' `
-      --name "nanoFramework.nanoCLR.Win32 NuGet" `
-      --description "nanoFramework.nanoCLR.Win32 NuGet" `
+      --name "nanoFramework.nanoCLR NuGets" `
+      --description "nanoFramework.nanoCLR NuGets" `
       --descriptionUrl "https://github.com/$env:Build_Repository_Name"
     displayName: Sign packages
     continueOnError: true
@@ -842,149 +847,6 @@ jobs:
       publishFeedCredentials: 'NuGet-nf-interpreter'
 
   - template: azure-pipelines-templates/publish-nanoclr.yml
-
-#################
-# nanoCLR CLI tool
-- job: Build_nanoCLR_CLI
-  condition: >-
-    and(
-      succeeded('Check_Code_Style'),
-      ne(dependencies.Check_Build_Options.outputs['BuildOptions.SKIP_BUILD'], true),
-      or(
-        eq(variables['BUILD_NANOCLR_CLI'], true),
-        eq(dependencies.Check_Build_Options.outputs['TargetsToBuild.BUILD_ALL'], true),
-        eq(dependencies.Check_Build_Options.outputs['TargetsToBuild.BUILD_NANOCLR_CLI'], true)
-      )
-    )
-
-  dependsOn:
-  - Check_Build_Options
-  - Check_Code_Style
-
-  pool:
-    vmImage: 'windows-latest'
-
-  variables:
-    DOTNET_NOLOGO: true
-    # creates a counter and assigns it to the revision variable
-    REVISION: $[counter('CLI_1_8_0_versioncounter', 0)]
-
-  steps:
-  - template: azure-pipelines-templates/nb-gitversioning.yml
-
-  - template: azure-pipelines-templates/install-nuget.yml@templates
-
-  - task: UseDotNet@2
-    displayName: Install .NET SDK
-    inputs:
-      packageType: sdk
-      version: 5.0.300
-
-  - task: DotNetCoreCLI@2
-    displayName: Restore NuGet packages
-    inputs:
-      command: restore
-      verbosityRestore: minimal
-      projects: targets\netcore\nanoCLR.sln
-      feedsToUse: select
-      includeNuGetOrg: true
-
-  - task: VSBuild@1
-    displayName: Build .NET Core target
-    inputs:
-      solution: 'targets\netcore\nanoCLR.sln'
-      platform: 'x86'
-      msbuildArgs: '/p:PublicRelease=true'
-      configuration: 'Release'
-
-  - task: DotNetCoreCLI@2
-    displayName: Pack nanoCLR CLI dotnet tool 
-    inputs:
-      command: pack
-      verbosityPack: minimal
-      configuration: 'Release'
-      packagesToPack: targets\netcore\nanoFramework.nanoCLR.CLI\nanoFramework.nanoCLR.CLI.csproj
-
-  - task: DotNetCoreCLI@2
-    displayName: Install SignTool tool
-    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
-    inputs:
-      command: custom
-      custom: tool
-      arguments: install --tool-path . SignClient
-
-  - pwsh: |
-      .\SignClient "Sign" `
-      --baseDirectory "$(Build.Repository.LocalPath)\build\bin\Release" `
-      --input "**/nanoFramework.nanoCLR.*" `
-      --config "$(Build.Repository.LocalPath)\config\SignClient.json" `
-      --filelist "$(Build.Repository.LocalPath)\config\filelist.txt" `
-      --user "$(SignClientUser)" `
-      --secret '$(SignClientSecret)' `
-      --name "nanoFramework.nanoCLR.CLI" `
-      --description "nanoFramework.nanoCLR.CLI" `
-      --descriptionUrl "https://github.com/$env:Build_Repository_Name"
-    displayName: Sign nanoCLR assemblies
-    continueOnError: true
-    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
-
-  - task: CopyFiles@1
-    condition: succeeded()
-    displayName: Collecting managed helpers deployable artifacts
-    inputs:
-      sourceFolder: $(Build.SourcesDirectory)
-      Contents: |
-        **\nanoFramework.nanoCLR.CLI*.nupkg
-      TargetFolder: '$(Build.ArtifactStagingDirectory)'
-      flattenFolders: true
-
-  - pwsh: |
-      .\SignClient "Sign" `
-      --baseDirectory "$(Build.ArtifactStagingDirectory)" `
-      --input "**/*.nupkg" `
-      --config "$(Build.Repository.LocalPath)\config\SignClient.json" `
-      --filelist "$(Build.Repository.LocalPath)\config\filelist.txt" `
-      --user "$(SignClientUser)" `
-      --secret '$(SignClientSecret)' `
-      --name "nanoFramework.nanoCLR.CLI NuGet" `
-      --description "nanoFramework.nanoCLR.CLI NuGet" `
-      --descriptionUrl "https://github.com/$env:Build_Repository_Name"
-    displayName: Sign packages
-    continueOnError: true
-    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
-    
-  # publish artifacts (only possible if this is not a PR originated on a fork)
-  - task: PublishBuildArtifacts@1
-    condition: succeeded()
-    displayName: Publish deployables artifacts
-    inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      ArtifactName: deployables
-      ArtifactType: Container
-
-  # push NuGet packages to Azure Artifacts feed (always happens except on PR builds)
-  - task: NuGetCommand@2
-    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
-    continueOnError: true
-    displayName: Push NuGet packages to Azure Artifacts
-    inputs:
-      command: push
-      nuGetFeedType: external
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-      publishFeedCredentials: 'AzureArtifacts-nf-interpreter'
-      allowPackageConflicts: true
-
-  # push NuGet class lib package to NuGet (always happens except on PR builds)
-  - task: NuGetCommand@2
-    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
-    continueOnError: true
-    displayName: Push NuGet packages to NuGet
-    inputs:
-      command: push
-      nuGetFeedType: external
-      allowPackageConflicts: true
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-      publishFeedCredentials: 'NuGet-nf-interpreter'
 
 ######################
 # generate change log
