@@ -34,6 +34,10 @@ if(USE_NETWORKING_OPTION)
     set(AZURERTOS_NETXDUO_REQUIRED ON CACHE INTERNAL "AZURERTOS_NETXDUO_REQUIRED for Networking")
 endif()
 
+if(API_System.IO.FileSystem)
+    set(AZURERTOS_FILEX_REQUIRED ON CACHE INTERNAL "AZURERTOS_FILEX_REQUIRED for FileSystem")
+endif()
+
 ###########################
 # Define PLATFORM base path
 set(BASE_PATH_FOR_PLATFORM ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
@@ -213,7 +217,7 @@ if(AZURERTOS_FILEX_REQUIRED)
     endif()
 
     FetchContent_Populate(azure_rtos_filex)
-
+    FetchContent_GetProperties(azure_rtos_filex)
 endif()
 
 ###########################
@@ -414,6 +418,7 @@ endif()
 
 set(TARGET_BASE_LOCATION_BINARY ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_VENDOR}/${TARGET_BOARD})
 set(TX_USER_FILE ${TARGET_BASE_LOCATION}/target_tx_user.h CACHE STRING "Enable TX user configuration")
+set(FX_USER_FILE ${TARGET_BASE_LOCATION}/target_fx_user.h CACHE STRING "Enable FX user configuration")
 
 ##############################
 # AzureRTOS common directories

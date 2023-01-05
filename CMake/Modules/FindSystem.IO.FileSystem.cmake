@@ -3,6 +3,8 @@
 # See LICENSE file in the project root for full license information.
 #
 
+include(FetchContent)
+
 # native code directory
 set(BASE_PATH_FOR_THIS_MODULE ${BASE_PATH_FOR_CLASS_LIBRARIES_MODULES}/System.IO.FileSystem)
 
@@ -16,6 +18,11 @@ endif()
 list(APPEND System.IO.FileSystem_INCLUDE_DIRS ${BASE_PATH_FOR_THIS_MODULE})
 list(APPEND System.IO.FileSystem_INCLUDE_DIRS ${TARGET_BASE_LOCATION}/Include)
 list(APPEND System.IO.FileSystem_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/src/System.IO.FileSystem)
+
+# network layer from Azure RTOS and NetX Duo
+if(RTOS_AZURERTOS_CHECK)
+    list(APPEND System.IO.FileSystem_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/targets/AzureRTOS/_common/FileX)
+endif()
 
 # source files
 set(System.IO.FileSystem_SRCS
@@ -40,7 +47,9 @@ foreach(SRC_FILE ${System.IO.FileSystem_SRCS})
 	        ${TARGET_BASE_LOCATION}
             ${PROJECT_COMMON_PATH}
             ${CMAKE_SOURCE_DIR}/src/System.IO.FileSystem
-
+            ${PROJECT_SOURCE_DIR}/targets/${RTOS}/_common
+            ${PROJECT_SOURCE_DIR}/targets/${RTOS}/${TARGET_VENDOR}/_common
+            
 	    CMAKE_FIND_ROOT_PATH_BOTH
     )
 

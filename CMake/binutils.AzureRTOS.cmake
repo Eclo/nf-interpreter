@@ -323,6 +323,17 @@ macro(nf_add_platform_include_directories target)
             ${MaximMicrosSDK_INCLUDE_DIRS}
         )
     endif()
+
+    if(AZURERTOS_FILEX_REQUIRED)
+
+        FetchContent_GetProperties(azure_rtos_filex)
+
+        target_include_directories(${target}.elf PUBLIC
+            ${azure_rtos_filex_SOURCE_DIR}/common/inc
+            ${azure_rtos_filex_SOURCE_DIR}/ports/${THREADX_ARCH}/${THREADX_TOOLCHAIN}/inc
+        )
+
+    endif()
     
     # includes specific to nanoBooter
     if(${target} STREQUAL ${NANOBOOTER_PROJECT_NAME})

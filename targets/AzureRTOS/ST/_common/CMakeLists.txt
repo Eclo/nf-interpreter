@@ -34,6 +34,13 @@ if(USE_NETWORKING_OPTION)
 
 endif()
 
+# append FileX if enabled
+if(AZURERTOS_FILEX_REQUIRED)
+    list(APPEND TARGET_AZURERTOS_COMMON_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/FileX/filex_thread.c)    
+    list(APPEND TARGET_AZURERTOS_COMMON_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/FileX/drivers/fx_stm32_sd_driver_glue.c)
+    list(APPEND TARGET_AZURERTOS_COMMON_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/FileX/drivers/fx_stm32_sd_driver.c)
+endif()
+
 # append hard fault handler if the build type is to include debug info
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     # list(APPEND TARGET_AZURERTOS_COMMON_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/hard_fault_handler.c)
