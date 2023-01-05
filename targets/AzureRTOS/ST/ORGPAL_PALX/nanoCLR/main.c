@@ -12,8 +12,6 @@
 #include <nanoHAL_v2.h>
 #include <targetPAL.h>
 
-extern uint8_t hal_spiffs_config();
-
 extern CLR_SETTINGS clrSettings;
 
 // TODO
@@ -54,6 +52,8 @@ TX_THREAD clrStartupThread;
 uint32_t clrStartupThreadStack[CLR_THREAD_STACK_SIZE / sizeof(uint32_t)];
 extern void ClrStartupThread_entry(uint32_t parameter);
 
+extern uint32_t NF_FileX_Init(void);
+
 void tx_application_define(void *first_unused_memory)
 {
     (void)first_unused_memory;
@@ -73,6 +73,8 @@ void tx_application_define(void *first_unused_memory)
 #if (TRACE_TO_STDIO == TRUE)
     StdioPort_Init();
 #endif
+
+    NF_FileX_Init();
 
     // Create receiver thread
     status = tx_thread_create(
