@@ -254,7 +254,7 @@ VOID  fx_stm32_sd_driver(FX_MEDIA *media_ptr)
 
 static UINT sd_read_data(FX_MEDIA *media_ptr, ULONG start_sector, UINT num_sectors, UINT use_scratch_buffer)
 {
-  INT i = 0;
+  UINT i = 0;
   UINT status;
   UCHAR *read_addr;
 
@@ -338,7 +338,7 @@ static UINT sd_read_data(FX_MEDIA *media_ptr, ULONG start_sector, UINT num_secto
 
 static UINT sd_write_data(FX_MEDIA *media_ptr, ULONG start_sector, UINT num_sectors, UINT use_scratch_buffer)
 {
-  INT i = 0;
+  UINT i = 0;
   UINT status;
   UCHAR *write_addr;
 

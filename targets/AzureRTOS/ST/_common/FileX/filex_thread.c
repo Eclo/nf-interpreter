@@ -17,26 +17,19 @@ CARD_STATUS_CONNECTED           = 77
 extern TX_QUEUE tx_msg_queue;
 
 // Detects if SD card is correctly plugged in the memory slot or not.
-// @param Instance  SD Instance
 // @retval Returns if SD is detected or not
-int32_t SD_IsDetected(uint32_t Instance)
+int32_t SD_IsDetected()
 {
     int32_t ret;
-    if (Instance >= 1)
+
+    /* Check SD card detect pin */
+    if (palReadLine(SDCARD_LINE_DETECT))
     {
-        ret = HAL_ERROR;
+        ret = SD_NOT_PRESENT;
     }
     else
     {
-        /* Check SD card detect pin */
-        if (HAL_GPIO_ReadPin(SD_DETECT_GPIO_Port, SD_DETECT_Pin) == GPIO_PIN_SET)
-        {
-            ret = SD_NOT_PRESENT;
-        }
-        else
-        {
-            ret = SD_PRESENT;
-        }
+        ret = SD_PRESENT;
     }
 
     return (int32_t)ret;
