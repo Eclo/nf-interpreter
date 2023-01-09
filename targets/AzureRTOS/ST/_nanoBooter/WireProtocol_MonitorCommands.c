@@ -4,8 +4,6 @@
 // See LICENSE file in the project root for full license information.
 //
 
-#include <hal.h>
-
 #include <nanoHAL_v2.h>
 #include <WireProtocol.h>
 #include <Debugger.h>
@@ -67,7 +65,7 @@ int Monitor_Reboot(WP_Message *message)
         else
         {
             // RESET CPU to load nanoCLR
-            NVIC_SystemReset();
+            //NVIC_SystemReset();
         }
     }
 

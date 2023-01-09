@@ -6,135 +6,166 @@
 //
 */
 
-/*
- * STM32F76xx generic setup.
- * 
- * RAM0 - Data, Heap.
- * RAM3 - Main Stack, Process Stack, BSS, NOCACHE, ETH.
- *
- * Notes:
- * BSS is placed in DTCM RAM in order to simplify DMA buffers management.
- */
+/* Entry Point */
+ENTRY(Reset_Handler)
+
+/* Highest address of the user mode stack */
+_estack = ORIGIN(RAM) + LENGTH(RAM); /* end of "RAM" Ram type memory */
+
+_Min_Heap_Size = 0x200 ; /* required amount of heap */
+_Min_Stack_Size = 0x400 ; /* required amount of stack */
+
+/* Memories definition */
 MEMORY
 {
-    flash0     (rx) : org = 0x08000000, len = 32k     /* space reserved for nanoBooter (1st sector 0x08000000 to 0x08008000)*/
-    flash1     (rx) : org = 0x00200000, len = 32k
-    flash2     (rx) : org = 0x00000000, len = 0
-    flash3     (rx) : org = 0x00000000, len = 0
-    flash4     (rx) : org = 0x00000000, len = 0
-    flash5     (rx) : org = 0x00000000, len = 0
-    flash6     (rx) : org = 0x00000000, len = 0
-    flash7     (rx) : org = 0x00000000, len = 0
-    config     (rw) : org = 0x08008000, len = 32k     /* space reserved for configuration block */
-    deployment (rx) : org = 0x00000000, len = 0       /* space reserved for application deployment */
-    ramvt      (wx) : org = 0x00000000, len = 0       /* initial RAM address is reserved for a copy of the vector table */
-    ram0       (wx) : org = 0x20020000, len = 384k    /* SRAM1 + SRAM2 */
-    ram1       (wx) : org = 0x20020000, len = 368k    /* SRAM1 */
-    ram2       (wx) : org = 0x2007C000, len = 16k     /* SRAM2 */
-    ram3       (wx) : org = 0x20000030, len = 128k-48 /* DTCM-RAM */
-    ram4       (wx) : org = 0x00000000, len = 16k     /* ITCM-RAM */
-    ram5       (wx) : org = 0x40024000, len = 4k      /* BCKP SRAM */
-    ram6       (wx) : org = 0x00000000, len = 0
-    ram7       (wx) : org = 0x00000000, len = 0
-    bootclpbrd (wx) : org = 0x20000000, len = 48      /* boot clipboard area */
+  RAM    (xrw)    : ORIGIN = 0x20020000,   LENGTH = 368K
+  FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 2048K
 }
 
-/* For each data/text section two region are defined, a virtual region
-   and a load region (_LMA suffix).*/
-
-/* Flash region to be used for exception vectors.*/
-REGION_ALIAS("VECTORS_FLASH", flash1);
-REGION_ALIAS("VECTORS_FLASH_LMA", flash0);
-
-/* Flash region to be used for constructors and destructors.*/
-REGION_ALIAS("XTORS_FLASH", flash1);
-REGION_ALIAS("XTORS_FLASH_LMA", flash0);
-
-/* Flash region to be used for code text.*/
-REGION_ALIAS("TEXT_FLASH", flash1);
-REGION_ALIAS("TEXT_FLASH_LMA", flash0);
-
-/* Flash region to be used for read only data.*/
-REGION_ALIAS("RODATA_FLASH", flash0);
-REGION_ALIAS("RODATA_FLASH_LMA", flash0);
-
-/* Flash region to be used for various.*/
-REGION_ALIAS("VARIOUS_FLASH", flash1);
-REGION_ALIAS("VARIOUS_FLASH_LMA", flash0);
-
-/* Flash region to be used for RAM(n) initialization data.*/
-REGION_ALIAS("RAM_INIT_FLASH_LMA", flash0);
-
-/* RAM region to be used for Main stack. This stack accommodates the processing
-   of all exceptions and interrupts.*/
-REGION_ALIAS("MAIN_STACK_RAM", ram3);
-
-/* RAM region to be used for the process stack. This is the stack used by
-   the main() function.*/
-REGION_ALIAS("PROCESS_STACK_RAM", ram3);
-
-/* RAM region to be used for data segment.*/
-REGION_ALIAS("DATA_RAM", ram0);
-REGION_ALIAS("DATA_RAM_LMA", flash0);
-
-/* RAM region to be used for BSS segment.*/
-REGION_ALIAS("BSS_RAM", ram3);
-
-/* RAM region to be used for the default heap.*/
-REGION_ALIAS("HEAP_RAM", ram0);
-
-/* RAM region to be used for the boot clipboard.*/
-REGION_ALIAS("SECTION_FOR_BOOTCLIPBOARD", bootclpbrd);
-
-/* rules inclusion.*/
-INCLUDE rules_stacks.ld
-
-/*===========================================================================*/
-/* Custom sections for STM32F7xx.                                            */
-/*===========================================================================*/
-
-/* RAM region to be used for nocache segment.*/
-REGION_ALIAS("NOCACHE_RAM", ram3);
-
-/* RAM region to be used for eth segment.*/
-REGION_ALIAS("ETH_RAM", ram3);
-
+/* Sections */
 SECTIONS
 {
-    /* Special section for non cache-able areas.*/
-    .nocache (NOLOAD) : ALIGN(4)
-    {
-        __nocache_base__ = .;
-        *(.nocache)
-        *(.nocache.*)
-        *(.bss.__nocache_*)
-        . = ALIGN(4);
-        __nocache_end__ = .;
-    } > NOCACHE_RAM
+  /* The startup code into "FLASH" Rom type memory */
+  .isr_vector :
+  {
+    . = ALIGN(4);
+    KEEP(*(.isr_vector)) /* Startup code */
+    . = ALIGN(4);
+  } >FLASH
 
-    /* Special section for Ethernet DMA non cache-able areas.*/
-    .eth (NOLOAD) : ALIGN(4)
-    {
-        __eth_base__ = .;
-        *(.eth)
-        *(.eth.*)
-        *(.bss.__eth_*)
-        . = ALIGN(4);
-        __eth_end__ = .;
-    } > ETH_RAM
+  /* The program code and other data into "FLASH" Rom type memory */
+  .text :
+  {
+    . = ALIGN(4);
+    *(.text)           /* .text sections (code) */
+    *(.text*)          /* .text* sections (code) */
+    *(.glue_7)         /* glue arm to thumb code */
+    *(.glue_7t)        /* glue thumb to arm code */
+    *(.eh_frame)
+
+    KEEP (*(.init))
+    KEEP (*(.fini))
+
+    . = ALIGN(4);
+    _etext = .;        /* define a global symbols at end of code */
+  } >FLASH
+
+  /* Constant data into "FLASH" Rom type memory */
+  .rodata :
+  {
+    . = ALIGN(4);
+    *(.rodata)         /* .rodata sections (constants, strings, etc.) */
+    *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
+    . = ALIGN(4);
+  } >FLASH
+
+  .ARM.extab   : {
+    . = ALIGN(4);
+    *(.ARM.extab* .gnu.linkonce.armextab.*)
+    . = ALIGN(4);
+  } >FLASH
+
+  .ARM : {
+    . = ALIGN(4);
+    __exidx_start = .;
+    *(.ARM.exidx*)
+    __exidx_end = .;
+    . = ALIGN(4);
+  } >FLASH
+
+  .preinit_array     :
+  {
+    . = ALIGN(4);
+    PROVIDE_HIDDEN (__preinit_array_start = .);
+    KEEP (*(.preinit_array*))
+    PROVIDE_HIDDEN (__preinit_array_end = .);
+    . = ALIGN(4);
+  } >FLASH
+
+  .init_array :
+  {
+    . = ALIGN(4);
+    PROVIDE_HIDDEN (__init_array_start = .);
+    KEEP (*(SORT(.init_array.*)))
+    KEEP (*(.init_array*))
+    PROVIDE_HIDDEN (__init_array_end = .);
+    . = ALIGN(4);
+  } >FLASH
+
+  .fini_array :
+  {
+    . = ALIGN(4);
+    PROVIDE_HIDDEN (__fini_array_start = .);
+    KEEP (*(SORT(.fini_array.*)))
+    KEEP (*(.fini_array*))
+    PROVIDE_HIDDEN (__fini_array_end = .);
+    . = ALIGN(4);
+  } >FLASH
+
+  /* Used by the startup to initialize data */
+  _sidata = LOADADDR(.data);
+
+  /* Initialized data sections into "RAM" Ram type memory */
+  .data :
+  {
+    . = ALIGN(4);
+    _sdata = .;        /* create a global symbol at data start */
+    *(.data)           /* .data sections */
+    *(.data*)          /* .data* sections */
+    *(.RamFunc)        /* .RamFunc sections */
+    *(.RamFunc*)       /* .RamFunc* sections */
+
+    . = ALIGN(4);
+    _edata = .;        /* define a global symbol at data end */
+
+  } >RAM AT> FLASH
+
+  /* Uninitialized data section into "RAM" Ram type memory */
+  . = ALIGN(4);
+  .bss :
+  {
+    /* This is used by the startup in order to initialize the .bss section */
+    _sbss = .;         /* define a global symbol at bss start */
+    __bss_start__ = _sbss;
+    *(.bss)
+    *(.bss*)
+    *(COMMON)
+
+    . = ALIGN(4);
+    _ebss = .;         /* define a global symbol at bss end */
+    __bss_end__ = _ebss;
+  } >RAM
+
+  /* User_heap_stack section, used to check that there is enough "RAM" Ram  type memory left */
+  ._user_heap_stack :
+  {
+    . = ALIGN(8);
+    PROVIDE ( end = . );
+    PROVIDE ( _end = . );
+    . = . + _Min_Heap_Size;
+    . = . + _Min_Stack_Size;
+    . = ALIGN(8);
+  } >RAM
+
+  .usbx_data 0x20027000 (NOLOAD):
+  {
+    *(.UsbHpcdSection)
+
+  } >RAM
+
+  .usbx_bss 0x20028000 (NOLOAD):
+  {
+    *(.UsbxPoolSection)
+
+  } >RAM
+
+  /* Remove information from the compiler libraries */
+  /DISCARD/ :
+  {
+    libc.a ( * )
+    libm.a ( * )
+    libgcc.a ( * )
+  }
+
+  .ARM.attributes 0 : { *(.ARM.attributes) }
 }
-
-/* Code rules inclusion.*/
-INCLUDE rules_code.ld
-
-/* Data rules inclusion.*/
-INCLUDE rules_data.ld
-
-/* Data rules inclusion.*/
-INCLUDE rules_memory.ld
-
-/* boot clipboard rules inclusion.*/
-INCLUDE rules_bootclipboard.ld
-
-/* Set the RAM segment used end for threadx */
-__RAM_segment_used_end__ = 0; 

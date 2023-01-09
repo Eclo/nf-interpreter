@@ -3,7 +3,7 @@
 // See LICENSE file in the project root for full license information.
 //
 
-#include <hal.h>
+// #include <hal.h>
 #include <nanoCLR_Headers.h>
 #include <target_common.h>
 #include <vectors.h>
@@ -20,14 +20,14 @@ void LaunchCLR(uint32_t address)
     // load the jump address with the nanoCLR ResetHandler address
     JumpToNanoCLR = nanoCLRVectorTable->ResetHandler;
 
-    // disable all interrupts
-    __disable_irq();
+    // // disable all interrupts
+    // __disable_irq();
 
-    // clear any pending interrupts to make sure we are jumping straight to nanoCLR ResetHandler
-    SCB->ICSR &= SCB_ICSR_PENDSVCLR_Msk;
+    // // clear any pending interrupts to make sure we are jumping straight to nanoCLR ResetHandler
+    // SCB->ICSR &= SCB_ICSR_PENDSVCLR_Msk;
 
-    // need to set stack pointer from CLR vector table
-    __set_MSP((uint32_t)nanoCLRVectorTable->InitStack);
+    // // need to set stack pointer from CLR vector table
+    // __set_MSP((uint32_t)nanoCLRVectorTable->InitStack);
 
     // make the jump to nanoCLR, at last
     JumpToNanoCLR();

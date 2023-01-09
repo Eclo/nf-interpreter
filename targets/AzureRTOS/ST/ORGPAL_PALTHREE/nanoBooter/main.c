@@ -3,10 +3,7 @@
 // See LICENSE file in the project root for full license information.
 //
 
-#include <hal.h>
-#include <hal_nf_community.h>
-
-#include <usbcfg.h>
+#include <stm32f7xx_hal.h>
 #include <targetHAL.h>
 #include <nanoPAL_BlockStorage.h>
 #include <nanoHAL_ConfigurationManager.h>
@@ -34,13 +31,18 @@ extern void ReceiverThread_entry(uint32_t parameter);
 TX_THREAD blinkThread;
 uint32_t blinkThreadStack[BLINK_THREAD_STACK_SIZE / sizeof(uint32_t)];
 
+void SystemClock_Config(void);
+void PeriphCommonClock_Config(void);
+void MPU_Config(void);
+void MX_GPIO_Init(void);
+
 void BlinkThread_entry(uint32_t parameter)
 {
     (void)parameter;
 
     while (1)
     {
-        palTogglePad(GPIOB, GPIOG_LED2);
+        HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_7);
         tx_thread_sleep(TX_TICKS_PER_MILLISEC(500));
     }
 }
@@ -53,21 +55,21 @@ void tx_application_define(void *first_unused_memory)
     // Create a byte memory pool from which to allocate the thread stacks.
     tx_byte_pool_create(&byte_pool_0, "byte pool 0", memory_area, DEFAULT_BYTE_POOL_SIZE);
 
-#if (HAL_NF_USE_STM32_CRC == TRUE)
-    // startup crc
-    crcStart(NULL);
-#endif
+// #if (HAL_NF_USE_STM32_CRC == TRUE)
+//     // startup crc
+//     crcStart(NULL);
+// #endif
 
-    // initialize block storage list and devices
-    // in CLR this is called in nanoHAL_Initialize()
-    // for nanoBooter we have to init it in order to provide the flash map for Monitor_FlashSectorMap command
-    BlockStorageList_Initialize();
-    BlockStorage_AddDevices();
+    // // initialize block storage list and devices
+    // // in CLR this is called in nanoHAL_Initialize()
+    // // for nanoBooter we have to init it in order to provide the flash map for Monitor_FlashSectorMap command
+    // BlockStorageList_Initialize();
+    // BlockStorage_AddDevices();
 
     // initialize configuration manager
     // in CLR this is called in nanoHAL_Initialize()
     // for nanoBooter we have to init it here to have access to network configuration blocks
-    ConfigurationManager_Initialize();
+    // ConfigurationManager_Initialize();
 
     // Create blink thread
     status = tx_thread_create(
@@ -89,86 +91,97 @@ void tx_application_define(void *first_unused_memory)
         }
     }
 
-    // Create receiver thread
-    status = tx_thread_create(
-        &receiverThread,
-        "Receiver Thread",
-        ReceiverThread_entry,
-        0,
-        receiverThreadStack,
-        RECEIVER_THREAD_STACK_SIZE,
-        RECEIVER_THREAD_PRIORITY,
-        RECEIVER_THREAD_PRIORITY,
-        TX_NO_TIME_SLICE,
-        TX_AUTO_START);
+    // // Create receiver thread
+    // status = tx_thread_create(
+    //     &receiverThread,
+    //     "Receiver Thread",
+    //     ReceiverThread_entry,
+    //     0,
+    //     receiverThreadStack,
+    //     RECEIVER_THREAD_STACK_SIZE,
+    //     RECEIVER_THREAD_PRIORITY,
+    //     RECEIVER_THREAD_PRIORITY,
+    //     TX_NO_TIME_SLICE,
+    //     TX_AUTO_START);
 
-    if (status != TX_SUCCESS)
-    {
-        while (1)
-        {
-        }
-    }
+    // if (status != TX_SUCCESS)
+    // {
+    //     while (1)
+    //     {
+    //     }
+    // }
 
-    // in CLR this is called in nanoHAL_Initialize()
-    // for nanoBooter we have to init it in order to provide the flash map for Monitor_FlashSectorMap command
-    BlockStorageList_Initialize();
-    BlockStorage_AddDevices();
+    // // in CLR this is called in nanoHAL_Initialize()
+    // // for nanoBooter we have to init it in order to provide the flash map for Monitor_FlashSectorMap command
+    // BlockStorageList_Initialize();
+    // BlockStorage_AddDevices();
 
     // initialize configuration manager
     // in CLR this is called in nanoHAL_Initialize()
     // for nanoBooter we have to init it here to have access to network configuration blocks
-    ConfigurationManager_Initialize();
+    // ConfigurationManager_Initialize();
 
     // report successfull nanoBooter execution
-    ReportSuccessfullNanoBooter();
+    // ReportSuccessfullNanoBooter();
 }
 
 //  Application entry point.
 int main(void)
 {
-    halInit();
+    MPU_Config();
+    SCB_EnableICache();
+    SCB_EnableDCache();
+    HAL_Init();
+    SystemClock_Config();
+    PeriphCommonClock_Config();
+    MX_GPIO_Init();
 
-    // init boot clipboard
-    InitBootClipboard();
+    // MX_USART1_UART_Init();
+    // MX_DMA_Init();
 
-    // set default values for GPIOs
-    palClearPad(GPIOE, GPIOE_PIN4);
-    palClearLine(LINE_RELAY);
-    palSetPad(GPIOJ, GPIOJ_PIN13);
-    palClearPad(GPIOJ, GPIOJ_PIN14);
-    palClearLine(LINE_LCD_ENABLE);
+    // halInit();
 
-    // the following IF is not mandatory, it's just providing a way for a user to 'force'
-    // the board to remain in nanoBooter and not launching nanoCLR
+    // // init boot clipboard
+    // InitBootClipboard();
 
-    // check if there is a request to remain on nanoBooter
-    if (!IsToRemainInBooter())
-    {
-        // if the USER/BOOT1 button is pressed, skip the check for a valid CLR image and remain in booter
-        // the user button in this board has a pull-up resistor so the check has to be inverted
-        if (palReadPad(GPIOK, GPIOK_BUTTON_BOOT))
-        {
-            // check for valid CLR image
-            // we are checking for a valid image right after the configuration block
-            if (CheckValidCLRImage((uint32_t)&__nanoConfig_end__))
-            {
-                // there seems to be a valid CLR image
-                // launch nanoCLR
-                LaunchCLR((uint32_t)&__nanoConfig_end__);
-            }
-        }
-    }
+    // // set default values for GPIOs
+    // palClearPad(GPIOE, GPIOE_PIN4);
+    // palClearLine(LINE_RELAY);
+    // palSetPad(GPIOJ, GPIOJ_PIN13);
+    // palClearPad(GPIOJ, GPIOJ_PIN14);
+    // palClearLine(LINE_LCD_ENABLE);
 
-    //  Initializes a serial-over-USB CDC driver.
-    sduObjectInit(&SERIAL_DRIVER);
-    sduStart(&SERIAL_DRIVER, &serusbcfg);
+    // // the following IF is not mandatory, it's just providing a way for a user to 'force'
+    // // the board to remain in nanoBooter and not launching nanoCLR
 
-    // Activates the USB driver and then the USB bus pull-up on D+.
-    // Note, a delay is inserted in order to not have to disconnect the cable after a reset.
-    usbDisconnectBus(serusbcfg.usbp);
-    osalThreadSleepS(OSAL_MS2I(100));
-    usbStart(serusbcfg.usbp, &usbcfg);
-    usbConnectBus(serusbcfg.usbp);
+    // // check if there is a request to remain on nanoBooter
+    // if (!IsToRemainInBooter())
+    // {
+    //     // if the USER/BOOT1 button is pressed, skip the check for a valid CLR image and remain in booter
+    //     // the user button in this board has a pull-up resistor so the check has to be inverted
+    //     if (palReadPad(GPIOK, GPIOK_BUTTON_BOOT))
+    //     {
+    //         // check for valid CLR image
+    //         // we are checking for a valid image right after the configuration block
+    //         if (CheckValidCLRImage((uint32_t)&__nanoConfig_end__))
+    //         {
+    //             // there seems to be a valid CLR image
+    //             // launch nanoCLR
+    //             LaunchCLR((uint32_t)&__nanoConfig_end__);
+    //         }
+    //     }
+    // }
+
+    // //  Initializes a serial-over-USB CDC driver.
+    // sduObjectInit(&SERIAL_DRIVER);
+    // sduStart(&SERIAL_DRIVER, &serusbcfg);
+
+    // // Activates the USB driver and then the USB bus pull-up on D+.
+    // // Note, a delay is inserted in order to not have to disconnect the cable after a reset.
+    // usbDisconnectBus(serusbcfg.usbp);
+    // osalThreadSleepS(OSAL_MS2I(100));
+    // usbStart(serusbcfg.usbp, &usbcfg);
+    // usbConnectBus(serusbcfg.usbp);
 
     // Enter the ThreadX kernel
     tx_kernel_enter();

@@ -17,9 +17,18 @@ list(APPEND STM32F7_CubePackage_INCLUDE_DIRS ${TARGET_BASE_LOCATION})
 # source files
 set(STM32F7_CubePackage_SRCS
 
-    # add HAL files here as required
+    system_stm32f7xx.c
 
-    # SPIFFS
+    # add HAL files here as required
+    stm32f7xx_hal.c
+    stm32f7xx_hal_rcc.c
+    stm32f7xx_hal_rcc_ex.c
+
+    stm32f7xx_hal_cortex.c
+    stm32f7xx_hal_msp.c
+    stm32f7xx_hal_gpio.c
+    stm32f7xx_hal_pwr_ex.c
+
     stm32f7xx_hal_dma.c
     stm32f7xx_hal_qspi.c
 )
@@ -52,7 +61,7 @@ list(REMOVE_DUPLICATES STM32F7_CubePackage_INCLUDE_DIRS)
 # remove duplicated defines that clash with ChibiOS defines (when used along with)
 if(${CHIBIOS_HAL_REQUIRED})
 
-    set(HAL_INCLUDE_FILE ${stm32f7_hal_driver_SOURCE_DIR}/Inc/Legacy/stm32_hal_legacy.h)
+    # set(HAL_INCLUDE_FILE ${stm32f7_hal_driver_SOURCE_DIR}/Inc/Legacy/stm32_hal_legacy.h)
 
     # need to read the supplied files and rename the call
     file(READ

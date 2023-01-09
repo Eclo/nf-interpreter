@@ -34,9 +34,12 @@ DeviceBlockInfo* STM32FlashDriver_GetDeviceInfo(void* context)
 bool STM32FlashDriver_Read(void* context, ByteAddress startAddress, unsigned int numBytes, unsigned char* buffer)
 {
     (void)context;
+    (void)numBytes;
+    (void)startAddress;
+    (void)buffer;
 
     // driver doesn't return anything so: we have to perform the operation here...
-    stm32FlashReadBytes(startAddress, numBytes, buffer);
+    // stm32FlashReadBytes(startAddress, numBytes, buffer);
 
     // ... and always return true
     return true;
@@ -46,20 +49,30 @@ bool STM32FlashDriver_Write(void* context, ByteAddress startAddress, unsigned in
 {
     (void)context;
     (void)readModifyWrite;
+    (void)buffer;
+    (void)numBytes;
+    (void)startAddress;
 
-    return stm32FlashWrite(startAddress, numBytes, buffer);
+
+    // return stm32FlashWrite(startAddress, numBytes, buffer);
+    return false;
 }
 
 bool STM32FlashDriver_IsBlockErased(void* context, ByteAddress blockAddress, unsigned int length)
 {
     (void)context;
+    (void)length;
+    (void)blockAddress;
 
-    return stm32FlashIsErased(blockAddress, length);
+    //return stm32FlashIsErased(blockAddress, length);
+    return false;
 }
 
 bool STM32FlashDriver_EraseBlock(void* context, ByteAddress address)
 {
     (void)context;
+    (void)address;
 
-    return stm32FlashErase(address);
+    //return stm32FlashErase(address);
+    return false;
 }

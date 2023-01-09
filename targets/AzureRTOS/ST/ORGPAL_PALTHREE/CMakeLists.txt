@@ -26,7 +26,7 @@ set(STM32_DRIVER_TARGET_DEVICE STM32F769xx CACHE BOOL "Set STM32 target for HAL 
 
 add_subdirectory(${azure_rtos_SOURCE_DIR} threadx)
 # add_subdirectory(${azure_rtos_filex_SOURCE_DIR} FileXSource)
-add_subdirectory(${azure_rtos_netxduo_SOURCE_DIR} netxduo)
+# add_subdirectory(${azure_rtos_netxduo_SOURCE_DIR} netxduo)
 # add_subdirectory(${azure_rtos_usbx_SOURCE_DIR} USBXSource)
 
 nf_setup_target_build(
