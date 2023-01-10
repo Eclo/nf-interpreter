@@ -46,6 +46,8 @@ set(WireProtocol_SRCS
     WireProtocol_HAL_Interface.c
     WireProtocol_App_Interface.c
 
+    WireProtocol_CircularBuffer.c
+
     nanoSupport_CRC32.c
 )
 
