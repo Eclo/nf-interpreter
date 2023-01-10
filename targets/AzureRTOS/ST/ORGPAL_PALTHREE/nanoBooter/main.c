@@ -144,33 +144,26 @@ int main(void)
     // // init boot clipboard
     // InitBootClipboard();
 
-    // // set default values for GPIOs
-    // palClearPad(GPIOE, GPIOE_PIN4);
-    // palClearLine(LINE_RELAY);
-    // palSetPad(GPIOJ, GPIOJ_PIN13);
-    // palClearPad(GPIOJ, GPIOJ_PIN14);
-    // palClearLine(LINE_LCD_ENABLE);
+    // the following IF is not mandatory, it's just providing a way for a user to 'force'
+    // the board to remain in nanoBooter and not launching nanoCLR
 
-    // // the following IF is not mandatory, it's just providing a way for a user to 'force'
-    // // the board to remain in nanoBooter and not launching nanoCLR
-
-    // // check if there is a request to remain on nanoBooter
-    // if (!IsToRemainInBooter())
-    // {
-    //     // if the USER/BOOT1 button is pressed, skip the check for a valid CLR image and remain in booter
-    //     // the user button in this board has a pull-up resistor so the check has to be inverted
-    //     if (palReadPad(GPIOK, GPIOK_BUTTON_BOOT))
-    //     {
-    //         // check for valid CLR image
-    //         // we are checking for a valid image right after the configuration block
-    //         if (CheckValidCLRImage((uint32_t)&__nanoConfig_end__))
-    //         {
-    //             // there seems to be a valid CLR image
-    //             // launch nanoCLR
-    //             LaunchCLR((uint32_t)&__nanoConfig_end__);
-    //         }
-    //     }
-    // }
+    // check if there is a request to remain on nanoBooter
+    if (!IsToRemainInBooter())
+    {
+        // if the USER/BOOT1 button is pressed, skip the check for a valid CLR image and remain in booter
+        // the user button in this board has a pull-up resistor so the check has to be inverted
+        if (HAL_GPIO_ReadPin(GPIOK, GPIO_PIN_7))
+        {
+            // // check for valid CLR image
+            // // we are checking for a valid image right after the configuration block
+            // if (CheckValidCLRImage((uint32_t)&__nanoConfig_end__))
+            // {
+            //     // there seems to be a valid CLR image
+            //     // launch nanoCLR
+            //     LaunchCLR((uint32_t)&__nanoConfig_end__);
+            // }
+        }
+    }
 
     // //  Initializes a serial-over-USB CDC driver.
     // sduObjectInit(&SERIAL_DRIVER);
