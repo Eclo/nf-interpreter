@@ -83,6 +83,16 @@ void HAL_MspInit(void)
   /* USER CODE END MspInit 1 */
 }
 
+/**
+  * @brief  DeInitializes the Global MSP.  
+  * @retval None
+  */
+void HAL_MspDeInit(void)
+{
+
+}
+
+
 // /**
 // * @brief SD MSP Initialization
 // * This function configures the hardware resources used in this example
@@ -335,6 +345,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 8;
   RCC_OscInitStruct.PLL.PLLR = 2;
+
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();

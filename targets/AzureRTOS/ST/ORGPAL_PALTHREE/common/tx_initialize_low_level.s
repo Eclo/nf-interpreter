@@ -439,7 +439,7 @@ SysTick_Handler:
 @
 
 SYSTEM_CLOCK      =   200000000
-SYSTICK_CYCLES    =   ((SYSTEM_CLOCK / 1000) -1)
+SYSTICK_CYCLES    =   ((SYSTEM_CLOCK / 10000) -1)
 
     .text 32
     .align 4
@@ -605,6 +605,7 @@ SysTick_Handler:
     BL      _tx_execution_isr_enter             @ Call the ISR enter function
 #endif
     BL      _tx_timer_interrupt
+    BL      HAL_IncTick                         @ Call STCube HAL_IncTick
 #ifdef TX_ENABLE_EXECUTION_CHANGE_NOTIFY
     BL      _tx_execution_isr_exit              @ Call the ISR exit function
 #endif

@@ -17,6 +17,8 @@ list(APPEND STM32F7_CubePackage_INCLUDE_DIRS ${TARGET_BASE_LOCATION})
 # source files
 set(STM32F7_CubePackage_SRCS
 
+    startup_stm32f769nihx.s
+    
     system_stm32f7xx.c
 
     # add HAL files here as required
@@ -28,9 +30,14 @@ set(STM32F7_CubePackage_SRCS
     stm32f7xx_hal_msp.c
     stm32f7xx_hal_gpio.c
     stm32f7xx_hal_pwr_ex.c
+    stm32f7xx_hal_tim.c
 
     stm32f7xx_hal_dma.c
     stm32f7xx_hal_qspi.c
+
+    stm32f7xx_hal_msp.c
+    target_hal_gpio.c
+
 )
 
 # add exception to compiler warnings as errors
@@ -43,8 +50,9 @@ foreach(SRC_FILE ${STM32F7_CubePackage_SRCS})
     find_file(STM32F7_CubePackage_SRC_FILE ${SRC_FILE}
         PATHS 
 
-            ${stm32f7_hal_driver_SOURCE_DIR}/Src
-            ${TARGET_BASE_LOCATION}/common/CubeMX
+        ${TARGET_BASE_LOCATION}/common/CubeMX
+        ${TARGET_BASE_LOCATION}/common
+        ${stm32f7_hal_driver_SOURCE_DIR}/Src
 
         CMAKE_FIND_ROOT_PATH_BOTH
     )
