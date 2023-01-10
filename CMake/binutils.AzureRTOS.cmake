@@ -430,6 +430,9 @@ macro(nf_add_platform_sources target)
 
     if(STM32_CUBE_PACKAGE_REQUIRED)
 
+        # extra files from nanoFramework source code
+        include(AzureRTOS_${TARGET_SERIES}_sources)
+
         nf_add_stm32_cube(
             BUILD_TARGET
                 ${target}
