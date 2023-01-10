@@ -431,5 +431,8 @@ void MPU_Config(void)
 
 void Error_Handler(void)
 {
-  
+     __asm("BKPT #0\n");
+    while (1)
+    { /*nop*/
+    } 
 }
