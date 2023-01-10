@@ -276,7 +276,6 @@ macro(nf_add_platform_dependencies target)
 
                 EXTRA_COMPILE_DEFINITIONS 
                     -DNX_INCLUDE_USER_DEFINE_FILE
-                    -DUSE_HAL_DRIVER
                     -D${STM32_DRIVER_TARGET_DEVICE}
 
             )
@@ -438,13 +437,17 @@ macro(nf_add_platform_sources target)
                 ${target}
 
             EXTRA_COMPILE_DEFINITIONS
-                -DUSE_HAL_DRIVER
                 -D${STM32_DRIVER_TARGET_DEVICE}
         )
 
         target_link_libraries(${target}.elf
             nano::stm32${TARGET_SERIES_SHORT_LOWER}_hal_driver_${target}
         )
+
+        # # WP uart
+        # target_sources(${target}.elf PUBLIC
+        #     ${CMAKE_SOURCE_DIR}/targets/AzureRTOS/ST/_common/drivers/wp_uart/wp_uart.c
+        # )
 
     endif()
 
