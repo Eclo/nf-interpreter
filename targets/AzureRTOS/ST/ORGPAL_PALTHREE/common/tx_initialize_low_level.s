@@ -439,7 +439,7 @@ SysTick_Handler:
 @
 
 SYSTEM_CLOCK      =   200000000
-SYSTICK_CYCLES    =   ((SYSTEM_CLOCK / 10000) -1)
+SYSTICK_CYCLES    =   ((SYSTEM_CLOCK / 1000) -1)
 
     .text 32
     .align 4
