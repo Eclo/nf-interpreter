@@ -1,34 +1,13 @@
-/**
-  ******************************************************************************
-  * @file      startup_stm32f769xx.s
-  * @author    MCD Application Team
-  * @brief     STM32F769xx Devices vector table for GCC based toolchain. 
-  *            This module performs:
-  *                - Set the initial SP
-  *                - Set the initial PC == Reset_Handler,
-  *                - Set the vector table entries with the exceptions ISR address
-  *                - Branches to main in the C library (which eventually
-  *                  calls main()).
-  *            After Reset the Cortex-M7 processor is in Thread mode,
-  *            priority is Privileged, and the Stack is set to Main.
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2016 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
-  *
-  ******************************************************************************
-  */
-    
-  .syntax unified
-  .cpu cortex-m7
-  .fpu softvfp
-  .thumb
+@//     
+@// Copyright (c) .NET Foundation and Contributors
+@// Copyright (c) 2016 STMicroelectronics. All rights reserved.
+@// See LICENSE file in the project root for full license information.
+@//
+  
+.syntax unified
+.cpu cortex-m7
+.fpu softvfp
+.thumb
 
 .global  g_pfnVectors
 .global  Default_Handler
