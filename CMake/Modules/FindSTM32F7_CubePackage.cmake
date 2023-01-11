@@ -7,6 +7,7 @@ include(FetchContent)
 FetchContent_GetProperties(stm32f7_hal_driver)
 FetchContent_GetProperties(cmsis_device_f7)
 FetchContent_GetProperties(cmsis_core)
+FetchContent_GetProperties(azrtos_xcube_f7)
 
 # set include directories
 list(APPEND STM32F7_CubePackage_INCLUDE_DIRS ${cmsis_device_f7_SOURCE_DIR}/Include)
@@ -37,6 +38,9 @@ set(STM32F7_CubePackage_SRCS
 
     stm32f7xx_hal_msp.c
     target_hal_gpio.c
+
+    # AZRTOS X-Cube 
+    
 
 )
 

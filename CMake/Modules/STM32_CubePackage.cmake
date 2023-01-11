@@ -6,6 +6,7 @@
 include(FetchContent)
 
 # include the STM32 HAL and CMSIS for the appropriate series, along with general CMSIS, if requested
+# if building for Azure RTOS, include the X-CUBE-AZRTOS package too
 
 # check if cube package source was specified or if it's empty (default is empty)
 macro(ProcessSTM32CubePackage)
@@ -29,14 +30,17 @@ macro(ProcessSTM32CubePackage)
         # WHEN CHANGING THESE MAKE SURE TO UPDATE THE DEV CONTAINERS
         set(HAL_DRIVER_GIT_TAG v1.7.13)
         set(CMSIS_DEVICE_GIT_TAG v2.6.7)
+        set(AZRTOS_XCUBE_GIT_TAG v1.1.0)
     elseif("${TARGET_SERIES}" STREQUAL "STM32F7xx")
         # WHEN CHANGING THESE MAKE SURE TO UPDATE THE DEV CONTAINERS
         set(HAL_DRIVER_GIT_TAG v1.3.0)
         set(CMSIS_DEVICE_GIT_TAG v1.2.8)
+        set(AZRTOS_XCUBE_GIT_TAG v1.1.0)
     elseif("${TARGET_SERIES}" STREQUAL "STM32H7xx")
         # WHEN CHANGING THESE MAKE SURE TO UPDATE THE DEV CONTAINERS
         set(HAL_DRIVER_GIT_TAG v1.10.1)
         set(CMSIS_DEVICE_GIT_TAG v1.10.1)
+        set(AZRTOS_XCUBE_GIT_TAG v3.0.0)
     elseif("${TARGET_SERIES}" STREQUAL "STM32L0xx")
         # WHEN CHANGING THESE MAKE SURE TO UPDATE THE DEV CONTAINERS
         set(HAL_DRIVER_GIT_TAG v1.10.5)
@@ -45,8 +49,11 @@ macro(ProcessSTM32CubePackage)
         # WHEN CHANGING THESE MAKE SURE TO UPDATE THE DEV CONTAINERS
         set(HAL_DRIVER_GIT_TAG v1.13.2)
         set(CMSIS_DEVICE_GIT_TAG v1.7.2)
+        set(AZRTOS_XCUBE_GIT_TAG v1.0.1)
     endif()
 
+    ###################
+    # STM32 HAL driver 
     set(NO_STM32_HAL_DRIVER_SOURCE TRUE)
     if(NO_STM32_HAL_DRIVER_SOURCE)
         if(NOT "${STM32_HAL_DRIVER_SOURCE}" STREQUAL "")
@@ -82,6 +89,8 @@ macro(ProcessSTM32CubePackage)
 
     endif()
 
+    ###################
+    # STM32 CMSIS (device)
     set(NO_STM32_CMSIS_DEVICE_SOURCE TRUE)
     if(NO_STM32_CMSIS_DEVICE_SOURCE)
         if(NOT "${STM32_CMSIS_DEVICE_SOURCE}" STREQUAL "")
@@ -117,6 +126,8 @@ macro(ProcessSTM32CubePackage)
 
     endif()
 
+    ###################
+    # STM32 CMSIS (core)
     set(NO_STM32_CMSIS_CORE_SOURCE TRUE)
     if(NO_STM32_CMSIS_CORE_SOURCE)
         if(NOT "${STM32_CMSIS_CORE_SOURCE}" STREQUAL "")
@@ -151,7 +162,7 @@ macro(ProcessSTM32CubePackage)
         endif()
 
     endif()
-
+    
     FetchContent_GetProperties(stm32${TARGET_SERIES_SHORT_LOWER}_hal_driver)
     FetchContent_Populate(stm32${TARGET_SERIES_SHORT_LOWER}_hal_driver)
 
@@ -161,6 +172,51 @@ macro(ProcessSTM32CubePackage)
     FetchContent_GetProperties(cmsis_core)
     FetchContent_Populate(cmsis_core)
 
+    ###################
+    # X-Cube package, if this is a build for Azure RTOS
+    # and the series is supported
+    if(RTOS_AZURERTOS_CHECK AND NOT("${TARGET_SERIES}" STREQUAL "STM32F0xx") AND NOT ("${TARGET_SERIES}" STREQUAL "STM32L0xx"))
+            
+        set(NO_AZRTOS_XCUBE_SOURCE TRUE)
+        if(NO_AZRTOS_XCUBE_SOURCE)
+            if(NOT "${AZRTOS_XCUBE_SOURCE}" STREQUAL "")
+                set(NO_AZRTOS_XCUBE_SOURCE FALSE)
+            endif()
+        endif()
+
+        if(NO_AZRTOS_XCUBE_SOURCE)
+            # no X-Cube package source specified, download it from nanoFramework fork
+            message(STATUS "X-CUBE-AZRTOS-${TARGET_SERIES_SHORT} from GitHub repo")
+
+            FetchContent_Declare(
+                azrtos_xcube_${TARGET_SERIES_SHORT_LOWER}
+                GIT_REPOSITORY https://github.com/STMicroelectronics/x-cube-azrtos-${TARGET_SERIES_SHORT_LOWER}.git
+                GIT_TAG ${AZRTOS_XCUBE_GIT_TAG}
+            )
+
+        else()
+            # X-Cube package source was specified
+
+            # sanity check is source path exists
+            if(EXISTS "${AZRTOS_XCUBE_SOURCE}/")
+                message(STATUS "X-CUBE-AZRTOS-${TARGET_SERIES_SHORT} source from: ${AZRTOS_XCUBE_SOURCE}")
+
+                FetchContent_Declare(
+                    azrtos_xcube_${TARGET_SERIES_SHORT_LOWER}
+                    SOURCE_DIR ${AZRTOS_XCUBE_SOURCE}
+                )
+
+            else()
+                message(FATAL_ERROR "Couldn't find X-CUBE-AZRTOS-${TARGET_SERIES_SHORT} source at ${AZRTOS_XCUBE_SOURCE}/")
+            endif()
+
+        endif()
+
+        FetchContent_GetProperties(azrtos_xcube_${TARGET_SERIES_SHORT_LOWER})
+        FetchContent_Populate(azrtos_xcube_${TARGET_SERIES_SHORT_LOWER})
+    
+    endif()
+ 
 endmacro()
 
 # macro to be called from binutils to add ST Cube package as a library
