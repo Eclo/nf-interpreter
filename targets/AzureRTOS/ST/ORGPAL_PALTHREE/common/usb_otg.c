@@ -30,14 +30,14 @@ void MX_USB_OTG_FS_PCD_Init(void)
     memset(&hpcd_USB_OTG_FS, 0x0, sizeof(PCD_HandleTypeDef));
     /* USER CODE END USB_OTG_HS_Init 1 */
     hpcd_USB_OTG_FS.Instance = USB_OTG_FS;
-    hpcd_USB_OTG_FS.Init.dev_endpoints = 9;
+    hpcd_USB_OTG_FS.Init.dev_endpoints = 6;
     hpcd_USB_OTG_FS.Init.speed = PCD_SPEED_FULL;
     hpcd_USB_OTG_FS.Init.dma_enable = DISABLE;
     hpcd_USB_OTG_FS.Init.phy_itface = USB_OTG_EMBEDDED_PHY;
     hpcd_USB_OTG_FS.Init.Sof_enable = DISABLE;
     hpcd_USB_OTG_FS.Init.low_power_enable = DISABLE;
     hpcd_USB_OTG_FS.Init.lpm_enable = DISABLE;
-    hpcd_USB_OTG_FS.Init.vbus_sensing_enable = DISABLE;
+    hpcd_USB_OTG_FS.Init.vbus_sensing_enable = ENABLE;
     hpcd_USB_OTG_FS.Init.use_dedicated_ep1 = DISABLE;
     hpcd_USB_OTG_FS.Init.use_external_vbus = DISABLE;
     if (HAL_PCD_Init(&hpcd_USB_OTG_FS) != HAL_OK)
@@ -56,10 +56,6 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *pcdHandle)
 
         /* USER CODE END USB_OTG_HS_MspInit 0 */
 
-        __HAL_RCC_GPIOB_CLK_ENABLE();
-        __HAL_RCC_GPIOI_CLK_ENABLE();
-        __HAL_RCC_GPIOH_CLK_ENABLE();
-        __HAL_RCC_GPIOC_CLK_ENABLE();
         __HAL_RCC_GPIOA_CLK_ENABLE();
         /* USB_OTG_FS GPIO Configuration
          * PA9 VBUS_FS
@@ -68,24 +64,32 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *pcdHandle)
          * PA12 OTG_FS_DP
          */
 
-        GPIO_InitStruct.Pin = GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12;
+        /* Configure DM DP Pins */
+        GPIO_InitStruct.Pin = (GPIO_PIN_11 | GPIO_PIN_12);
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-        GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
+        GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+        GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+        /* Configure VBUS Pin */
         GPIO_InitStruct.Pin = GPIO_PIN_9;
-        GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+        /* Configure ID pin */
+        GPIO_InitStruct.Pin = GPIO_PIN_10;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+        GPIO_InitStruct.Pull = GPIO_PULLUP;
+        GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
         /* USB_OTG_FS clock enable */
         __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
 
         /* USB_OTG_FS interrupt Init */
-        HAL_NVIC_SetPriority(OTG_FS_IRQn, 7, 0);
+        HAL_NVIC_SetPriority(OTG_FS_IRQn, 6, 0);
         HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
         /* USER CODE BEGIN USB_OTG_HS_MspInit 1 */
 
@@ -118,6 +122,12 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *pcdHandle)
 
         /* USER CODE END USB_OTG_HS_MspDeInit 1 */
     }
+}
+
+// This function handles USB-On-The-Go FS global interrupt request.
+void OTG_FS_IRQHandler(void)
+{
+    HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
 }
 
 /* USER CODE BEGIN 1 */

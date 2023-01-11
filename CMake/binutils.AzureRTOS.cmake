@@ -465,6 +465,13 @@ macro(nf_add_platform_sources target)
             nano::stm32${TARGET_SERIES_SHORT_LOWER}_hal_driver_${target}
         )
 
+        if(AZURERTOS_USBX_REQUIRED)
+            # need to tweak linker options to make sure weak symbols in HAL driver are replaced with the ones from USBX
+            target_link_options(usbx
+                INTERFACE -Wl,--whole-archive ${CMAKE_BINARY_DIR}/targets/AzureRTOS/ST/ORGPAL_PALTHREE/libstm32f7_hal_driver_${target}.a -Wl,--no-whole-archive)
+
+        endif()
+
         # # WP uart
         # target_sources(${target}.elf PUBLIC
         #     ${CMAKE_SOURCE_DIR}/targets/AzureRTOS/ST/_common/drivers/wp_uart/wp_uart.c
@@ -501,6 +508,10 @@ macro(nf_add_platform_sources target)
             azrtos::usbx
         )
     endif()
+
+    target_link_libraries(${target}.elf
+        azrtos::threadx
+    )
 
 endmacro()
 
