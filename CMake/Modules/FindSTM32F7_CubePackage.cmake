@@ -60,7 +60,7 @@ SET_SOURCE_FILES_PROPERTIES(${stm32f7_hal_driver_SOURCE_DIR}/Src/stm32f7xx_hal_e
 # add AZRTOS X-Cube files
 if(RTOS_AZURERTOS_CHECK)
 
-    if(USBX_FEATURE_CDC)
+    if(HAL_WP_USE_USB_CDC)
         
         # HAL
         list(APPEND STM32F7_CubePackage_SRCS stm32f7xx_hal_pcd.c)

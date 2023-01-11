@@ -16,9 +16,30 @@ option(AZURERTOS_NETXDUO_REQUIRED "option to include Azure RTOS NetX Duo")
 option(USBX_FEATURE_CDC "option to use USBX CDC class")
 option(USBX_FEATURE_HID "option to use USBX HID class")
 
+#################################################################
+# Options for Wire Protocol channel
+option(HAL_WP_USE_SERIAL "option to use serial port (UART) to route Wire Protocol")
+option(HAL_WP_USE_USB_CDC "option to use USBX CDC to route Wire Protocol")
+
+if(HAL_WP_USE_SERIAL)
+    message(STATUS "Wire Protocol will use serial port (UART).")
+    set(HAL_WP_USE_SERIAL_OPTION TRUE CACHE INTERNAL "set HAL_WP_USE_SERIAL")
+    set(HAL_WP_USE_USB_CDC_OPTION FALSE CACHE INTERNAL "set HAL_WP_USE_USB_CDC")
+elseif(HAL_WP_USE_USB_CDC)
+    message(STATUS "Wire Protocol will use USB CDC.")
+    set(HAL_WP_USE_USB_CDC_OPTION TRUE CACHE INTERNAL "set HAL_WP_USE_USB_CDC")
+    set(HAL_WP_USE_SERIAL_OPTION FALSE CACHE INTERNAL "set HAL_WP_USE_SERIAL")
+else()
+    message(FATAL_ERROR "\n\nERROR: need to choose a channel for Wire Protocol. One of the build options HAL_WP_USE_SERIAL_OPTION or HAL_WP_USE_USB_CDC_OPTION has to be 'ON'.")
+endif()
+
+if(HAL_WP_USE_USB_CDC)
+    unset(USBX_FEATURE_CDC CACHE)
+    set(USBX_FEATURE_CDC ON CACHE INTERNAL "Force USBX_FEATURE_CDC")
+endif()
+
 if(USBX_FEATURE_CDC)
 
-    set(USBX_FEATURE_CDC_OPTION TRUE CACHE INTERNAL "USBX_FEATURE_CDC_OPTION for USBX_FEATURE_CDC")
     # requires:
     # AZURERTOS_USBX_REQUIRED
     set(AZURERTOS_USBX_REQUIRED ON CACHE INTERNAL "AZURERTOS_USBX_REQUIRED for USBX_FEATURE_CDC")
@@ -27,8 +48,6 @@ if(USBX_FEATURE_CDC)
     # AZURERTOS_NETXDUO_REQUIRED
     set(AZURERTOS_NETXDUO_REQUIRED ON CACHE INTERNAL "AZURERTOS_NETXDUO_REQUIRED for USBX_FEATURE_CDC")
 
-else()
-    set(USBX_FEATURE_CDC_OPTION FALSE CACHE INTERNAL "USBX_FEATURE_CDC_OPTION for USBX_FEATURE_CDC")
 endif()
 
 if(USBX_FEATURE_HID)
