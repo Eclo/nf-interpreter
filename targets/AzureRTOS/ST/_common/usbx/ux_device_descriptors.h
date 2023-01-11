@@ -16,6 +16,7 @@ extern "C"
 /* Includes ------------------------------------------------------------------*/
 #include <ux_api.h>
 #include <ux_stm32_config.h>
+#include <wp_uart_config.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -244,12 +245,31 @@ extern "C"
 
     /* USER CODE END Private_defines */
 
-#define USBD_VID                 1155
+// check for defines for descriptors
+#ifndef USBD_VID
+// default to ST VID
+#define USBD_VID                 0x0483
+#endif
+#ifndef USBD_PID
+// default to ST PID
 #define USBD_PID                 22288
+#endif
+#ifndef USBD_LANGID_STRING
 #define USBD_LANGID_STRING       1033
+#endif
+#ifndef USBD_MANUFACTURER_STRING
 #define USBD_MANUFACTURER_STRING "STMicroelectronics"
-#define USBD_PRODUCT_STRING      "STM32 Virtual ComPort"
-#define USBD_SERIAL_NUMBER       "CDC_ACM001"
+#endif
+#ifndef USBD_PRODUCT_STRING
+#define USBD_PRODUCT_STRING      "nanoFramework Virtual COM Port"
+#endif
+
+#ifdef STM32F7XX
+// valid for STM32F7 series
+#define DEVICE_ID1 (0x1FF0F420)
+#define DEVICE_ID2 (0x1FF0F424)
+#define DEVICE_ID3 (0x1FF0F428)
+#endif
 
 #define USB_DESC_TYPE_INTERFACE     0x04U
 #define USB_DESC_TYPE_ENDPOINT      0x05U

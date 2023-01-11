@@ -75,6 +75,13 @@ __ALIGN_BEGIN UCHAR USBD_string_framework[USBD_STRING_FRAMEWORK_MAX_LENGTH] __AL
 #endif /* defined ( __ICCARM__ ) */
 UCHAR USBD_language_id_framework[LANGUAGE_ID_MAX_LENGTH] = {0};
 
+// this will produce a string with NANO_ prefix followed
+// by the hexadecimal representation of the silicon unique ID of the CPU
+uint8_t UsbSerialNumber[] = "NANO_xxxxxxxxxxxxxxxx ";
+#define INDEX_OF_WCHAR_FOR_UNIQUE_ID 5
+
+void Get_SerialNum();
+
 /* USER CODE BEGIN PV2 */
 
 /* USER CODE END PV2 */
@@ -193,8 +200,11 @@ uint8_t *USBD_Get_String_Framework(ULONG *Length)
     USBD_string_framework[count++] = USBD_LANGID_STRING >> 8;
     USBD_string_framework[count++] = USBD_IDX_SERIAL_STR;
 
+    // grab the serial number from the STM32 UID
+    Get_SerialNum();
+
     /* Set the Serial number in USBD_string_framework */
-    USBD_Desc_GetString((uint8_t *)USBD_SERIAL_NUMBER, USBD_string_framework + count, &len);
+    USBD_Desc_GetString((uint8_t *)UsbSerialNumber, USBD_string_framework + count, &len);
 
     /* USER CODE String_Framework1 */
 
@@ -679,6 +689,80 @@ static void USBD_FrameWork_CDCDesc(USBD_DevClassHandleTypeDef *pdev, uint32_t pC
     ((USBD_ConfigDescTypedef *)pConf)->wDescriptorLength = *Sze;
 }
 #endif /* USBD_CDC_ACM_CLASS_ACTIVATED == 1 */
+
+void strrev(uint8_t *arr, int start, int end)
+{
+    uint8_t temp;
+
+    if (start >= end)
+        return;
+
+    temp = *(arr + start);
+    *(arr + start) = *(arr + end);
+    *(arr + end) = temp;
+
+    start++;
+    end--;
+    strrev(arr, start, end);
+}
+
+uint8_t *itoa(int number, uint8_t *arr, int base)
+{
+    int i = 0, r, negative = 0;
+
+    if (number == 0)
+    {
+        arr[i] = '0';
+        arr[i + 1] = '\0';
+        return arr;
+    }
+
+    if (number < 0 && base == 10)
+    {
+        number *= -1;
+        negative = 1;
+    }
+
+    while (number != 0)
+    {
+        r = number % base;
+        arr[i] = (r > 9) ? (r - 10) + 'a' : r + '0';
+        i++;
+        number /= base;
+    }
+
+    if (negative)
+    {
+        arr[i] = '-';
+        i++;
+    }
+
+    strrev(arr, 0, i - 1);
+
+    arr[i] = '\0';
+
+    return arr;
+}
+
+// Create the serial number string descriptor
+void Get_SerialNum()
+{
+    uint8_t *pbuf = &UsbSerialNumber[INDEX_OF_WCHAR_FOR_UNIQUE_ID];
+    uint32_t deviceserial0, deviceserial1, deviceserial2;
+
+    deviceserial0 = *(uint32_t *)DEVICE_ID1;
+    deviceserial1 = *(uint32_t *)DEVICE_ID2;
+    deviceserial2 = *(uint32_t *)DEVICE_ID3;
+
+    deviceserial0 += deviceserial2;
+
+    if (deviceserial0 != 0)
+    {
+        itoa(deviceserial0, pbuf, 16);
+        pbuf += 8;
+        itoa(deviceserial1, pbuf, 16);
+    }
+}
 
 /* USER CODE BEGIN 1 */
 
