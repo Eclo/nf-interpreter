@@ -308,6 +308,18 @@ macro(nf_add_platform_include_directories target)
 
     endif()
 
+    if(AZURERTOS_USBX_REQUIRED)
+
+        FetchContent_GetProperties(azure_rtos_usbx)
+
+        get_target_property(USBX_INCLUDE_DIRECTORIES azrtos::usbx INCLUDE_DIRECTORIES)
+
+        target_include_directories(${target}.elf PUBLIC
+            ${USBX_INCLUDE_DIRECTORIES}
+        )
+
+    endif()
+
     if(CHIBIOS_HAL_REQUIRED)
         target_include_directories(${target}.elf PUBLIC
             ${CHIBIOS_HAL_INCLUDE_DIRS}

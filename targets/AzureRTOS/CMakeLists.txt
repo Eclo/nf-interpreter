@@ -147,7 +147,7 @@ if(AZURERTOS_USBX_REQUIRED)
         FetchContent_Declare(
             azure_rtos_usbx
             GIT_REPOSITORY https://github.com/azure-rtos/usbx.git
-            GIT_TAG ${RTOS_VERSION}
+            GIT_TAG ${USBX_VERSION}
         )
 
     else()
@@ -443,6 +443,7 @@ endif()
 
 set(TARGET_BASE_LOCATION_BINARY ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_VENDOR}/${TARGET_BOARD})
 set(TX_USER_FILE ${TARGET_BASE_LOCATION}/target_tx_user.h CACHE STRING "Enable TX user configuration")
+set(UX_USER_FILE ${TARGET_BASE_LOCATION}/target_ux_user.h CACHE STRING "Enable USBX user configuration")
 
 ##############################
 # AzureRTOS common directories
