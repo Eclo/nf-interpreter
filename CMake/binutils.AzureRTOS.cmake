@@ -468,7 +468,7 @@ macro(nf_add_platform_sources target)
         if(AZURERTOS_USBX_REQUIRED)
             # need to tweak linker options to make sure weak symbols in HAL driver are replaced with the ones from USBX
             target_link_options(usbx
-                INTERFACE -Wl,--whole-archive ${CMAKE_BINARY_DIR}/targets/AzureRTOS/ST/ORGPAL_PALTHREE/libstm32f7_hal_driver_${target}.a -Wl,--no-whole-archive)
+                INTERFACE -Wl,--whole-archive ${CMAKE_BINARY_DIR}/targets/AzureRTOS/ST/ORGPAL_PALTHREE/libstm32f7_hal_driver_nanoBooter.a -Wl,--no-whole-archive)
 
         endif()
 
