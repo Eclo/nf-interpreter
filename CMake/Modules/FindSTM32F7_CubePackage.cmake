@@ -7,13 +7,23 @@ include(FetchContent)
 FetchContent_GetProperties(stm32f7_hal_driver)
 FetchContent_GetProperties(cmsis_device_f7)
 FetchContent_GetProperties(cmsis_core)
-FetchContent_GetProperties(azrtos_xcube_f7)
+
+if(RTOS_AZURERTOS_CHECK)
+    FetchContent_GetProperties(azrtos_xcube_f7)
+endif()
 
 # set include directories
 list(APPEND STM32F7_CubePackage_INCLUDE_DIRS ${cmsis_device_f7_SOURCE_DIR}/Include)
 list(APPEND STM32F7_CubePackage_INCLUDE_DIRS ${stm32f7_hal_driver_SOURCE_DIR}/Inc)
 list(APPEND STM32F7_CubePackage_INCLUDE_DIRS ${cmsis_core_SOURCE_DIR}/Include)
 list(APPEND STM32F7_CubePackage_INCLUDE_DIRS ${TARGET_BASE_LOCATION})
+list(APPEND STM32F7_CubePackage_INCLUDE_DIRS ${TARGET_BASE_LOCATION}/common)
+
+# includes for AZRTOS X-Cube
+if(RTOS_AZURERTOS_CHECK)
+    list(APPEND STM32F7_CubePackage_INCLUDE_DIRS ${azrtos_xcube_f7_SOURCE_DIR}/Middlewares/ST/usbx/common/usbx_stm32_device_controllers)
+    list(APPEND STM32F7_CubePackage_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/targets/AzureRTOS/ST/_common/usbx)
+endif()
 
 # source files
 set(STM32F7_CubePackage_SRCS
@@ -47,6 +57,46 @@ set(STM32F7_CubePackage_SRCS
 # add exception to compiler warnings as errors
 SET_SOURCE_FILES_PROPERTIES(${stm32f7_hal_driver_SOURCE_DIR}/Src/stm32f7xx_hal_eth.c PROPERTIES COMPILE_FLAGS -Wno-unused-parameter)
 
+# add AZRTOS X-Cube files
+if(RTOS_AZURERTOS_CHECK)
+
+    if(USBX_FEATURE_CDC)
+        
+        # HAL
+        list(APPEND STM32F7_CubePackage_SRCS stm32f7xx_hal_pcd.c)
+        list(APPEND STM32F7_CubePackage_SRCS stm32f7xx_hal_pcd_ex.c)
+        list(APPEND STM32F7_CubePackage_SRCS stm32f7xx_ll_usb.c)
+       
+        # X-Cube
+        list(APPEND STM32F7_CubePackage_SRCS ux_dcd_stm32_callback.c)
+        list(APPEND STM32F7_CubePackage_SRCS ux_dcd_stm32_endpoint_create.c)
+        list(APPEND STM32F7_CubePackage_SRCS ux_dcd_stm32_endpoint_destroy.c)
+        list(APPEND STM32F7_CubePackage_SRCS ux_dcd_stm32_endpoint_reset.c)
+        list(APPEND STM32F7_CubePackage_SRCS ux_dcd_stm32_endpoint_stall.c)
+        list(APPEND STM32F7_CubePackage_SRCS ux_dcd_stm32_endpoint_status.c)
+        list(APPEND STM32F7_CubePackage_SRCS ux_dcd_stm32_frame_number_get.c)
+        list(APPEND STM32F7_CubePackage_SRCS ux_dcd_stm32_function.c)
+        list(APPEND STM32F7_CubePackage_SRCS ux_dcd_stm32_initialize_complete.c)
+        list(APPEND STM32F7_CubePackage_SRCS ux_dcd_stm32_initialize.c)
+        list(APPEND STM32F7_CubePackage_SRCS ux_dcd_stm32_interrupt_handler.c)
+        list(APPEND STM32F7_CubePackage_SRCS ux_dcd_stm32_transfer_abort.c)
+        list(APPEND STM32F7_CubePackage_SRCS ux_dcd_stm32_transfer_request.c)
+        list(APPEND STM32F7_CubePackage_SRCS ux_dcd_stm32_transfer_run.c)
+        list(APPEND STM32F7_CubePackage_SRCS ux_dcd_stm32_uninitialize.c)
+
+        list(APPEND STM32F7_CubePackage_SRCS ux_device_cdc_acm.c)
+        list(APPEND STM32F7_CubePackage_SRCS ux_device_descriptors.c)
+        list(APPEND STM32F7_CubePackage_SRCS usb_otg.c)
+       
+        # add exception to compiler warnings as errors
+        SET_SOURCE_FILES_PROPERTIES(${azrtos_xcube_f7_SOURCE_DIR}/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_callback.c PROPERTIES COMPILE_FLAGS -Wno-unused-parameter)
+        SET_SOURCE_FILES_PROPERTIES(${azrtos_xcube_f7_SOURCE_DIR}/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_frame_number_get.c PROPERTIES COMPILE_FLAGS -Wno-unused-parameter)
+
+    endif()
+
+endif()
+
+
 foreach(SRC_FILE ${STM32F7_CubePackage_SRCS})
 
     set(STM32F7_CubePackage_SRC_FILE SRC_FILE-NOTFOUND)
@@ -57,6 +107,10 @@ foreach(SRC_FILE ${STM32F7_CubePackage_SRCS})
         ${TARGET_BASE_LOCATION}/common/CubeMX
         ${TARGET_BASE_LOCATION}/common
         ${stm32f7_hal_driver_SOURCE_DIR}/Src
+        
+        ${azrtos_xcube_f7_SOURCE_DIR}/Middlewares/ST/usbx/common/usbx_stm32_device_controllers
+
+        ${CMAKE_SOURCE_DIR}/targets/AzureRTOS/ST/_common/usbx
 
         CMAKE_FIND_ROOT_PATH_BOTH
     )

@@ -16,7 +16,6 @@ include(AzureRTOS_${TARGET_SERIES}_GCC_options)
 # Azure RTOS settings and inclusion of build system
 set(THREADX_ARCH "cortex_m7")
 set(THREADX_TOOLCHAIN "gnu")
-# set(UX_USER_FILE ${TARGET_BASE_LOCATION}/target_ux_user.h CACHE STRING "Enable UX user configuration")
 set(NX_USER_FILE ${TARGET_BASE_LOCATION}/target_nx_user.h CACHE STRING "Enable NX user configuration")
 set(NXD_ENABLE_FILE_SERVERS OFF CACHE BOOL "Disable fileX dependency by netxduo")
 # set(FX_USER_FILE ${TARGET_BASE_LOCATION}/target_fx_user.h CACHE STRING "Enable FX user configuration")
@@ -25,9 +24,9 @@ set(NXD_ENABLE_FILE_SERVERS OFF CACHE BOOL "Disable fileX dependency by netxduo"
 set(STM32_DRIVER_TARGET_DEVICE STM32F769xx CACHE BOOL "Set STM32 target for HAL Driver")
 
 add_subdirectory(${azure_rtos_SOURCE_DIR} threadx)
-# add_subdirectory(${azure_rtos_filex_SOURCE_DIR} FileXSource)
-# add_subdirectory(${azure_rtos_netxduo_SOURCE_DIR} netxduo)
-# add_subdirectory(${azure_rtos_usbx_SOURCE_DIR} USBXSource)
+add_subdirectory(${azure_rtos_filex_SOURCE_DIR} filex)
+add_subdirectory(${azure_rtos_netxduo_SOURCE_DIR} netxduo)
+add_subdirectory(${azure_rtos_usbx_SOURCE_DIR} usbx)
 
 nf_setup_target_build(
     HAS_NANOBOOTER

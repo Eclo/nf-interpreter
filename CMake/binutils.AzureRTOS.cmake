@@ -209,10 +209,10 @@ macro(nf_add_platform_dependencies target)
         add_dependencies(${target}.elf nano::NF_CoreCLR)
 
 
-        if(AZURERTOS_NETXDUO_REQUIRED)
-            FetchContent_GetProperties(azure_rtos_netxduo)
-            get_target_property(NETXDUO_INCLUDES azrtos::netxduo INCLUDE_DIRECTORIES)
-        endif()
+        # if(AZURERTOS_NETXDUO_REQUIRED)
+        #     FetchContent_GetProperties(azure_rtos_netxduo)
+        #     get_target_property(NETXDUO_INCLUDES azrtos::netxduo INCLUDE_DIRECTORIES)
+        # endif()
 
         nf_add_lib_wireprotocol(
             EXTRA_INCLUDES
@@ -441,12 +441,21 @@ macro(nf_add_platform_sources target)
 
     if(STM32_CUBE_PACKAGE_REQUIRED)
 
+        if(AZURERTOS_USBX_REQUIRED)
+            FetchContent_GetProperties(azure_rtos_usbx)
+            get_target_property(USBX_INCLUDE_DIRECTORIES azrtos::usbx INCLUDE_DIRECTORIES)
+        endif()
+        
         # extra files from nanoFramework source code
         include(AzureRTOS_${TARGET_SERIES}_sources)
 
         nf_add_stm32_cube(
             BUILD_TARGET
                 ${target}
+            
+            EXTRA_INCLUDES
+                ${USBX_INCLUDE_DIRECTORIES}
+                ${AZRTOS_INCLUDES}
 
             EXTRA_COMPILE_DEFINITIONS
                 -D${STM32_DRIVER_TARGET_DEVICE}
@@ -486,6 +495,12 @@ macro(nf_add_platform_sources target)
     target_link_libraries(${target}.elf
         azrtos::threadx
     )
+
+    if(AZURERTOS_USBX_REQUIRED)
+        target_link_libraries(${target}.elf
+            azrtos::usbx
+        )
+    endif()
 
 endmacro()
 

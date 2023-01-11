@@ -38,6 +38,11 @@ if(USE_NETWORKING_OPTION)
 
 endif()
 
+# append UsbX if enabled
+if(AZURERTOS_USBX_REQUIRED)
+    list(APPEND TARGET_AZURERTOS_COMMON_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/usbx/nf_usbx.c)    
+endif()
+
 # append hard fault handler if the build type is to include debug info
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     # list(APPEND TARGET_AZURERTOS_COMMON_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/hard_fault_handler.c)

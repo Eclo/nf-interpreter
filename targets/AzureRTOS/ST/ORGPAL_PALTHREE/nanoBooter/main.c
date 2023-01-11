@@ -35,6 +35,7 @@ void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 void MPU_Config(void);
 void MX_GPIO_Init(void);
+extern uint32_t NF_UsbX_Init(void);
 
 void BlinkThread_entry(uint32_t parameter)
 {
@@ -59,6 +60,8 @@ void tx_application_define(void *first_unused_memory)
 //     // startup crc
 //     crcStart(NULL);
 // #endif
+
+ NF_UsbX_Init();
 
     // // initialize block storage list and devices
     // // in CLR this is called in nanoHAL_Initialize()
