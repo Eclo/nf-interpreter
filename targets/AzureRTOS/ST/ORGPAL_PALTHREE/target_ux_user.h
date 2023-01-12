@@ -72,20 +72,17 @@
    class, then the UX_MAX_CLASSES value can be set to 3 regardless of the number of devices 
    that belong to these classes.  */
 
-/* #define UX_MAX_CLASSES  3
-*/
+#define UX_MAX_CLASSES  1
 
 
 /* Defined, this value is the maximum number of classes in the device stack that can be loaded by
    USBX.  */
 
-/* #define UX_MAX_SLAVE_CLASS_DRIVER    1
-*/
+#define UX_MAX_SLAVE_CLASS_DRIVER    1
 
 /* Defined, this value is the maximum number of interfaces in the device framework.  */
 
-/* #define UX_MAX_SLAVE_INTERFACES    16
-*/
+#define UX_MAX_SLAVE_INTERFACES    4
 
 /* Defined, this value represents the number of different host controllers available in the system. 
    For USB 1.1 support, this value will usually be 1. For USB 2.0 support, this value can be more 
@@ -314,7 +311,7 @@
 /* #define UX_HOST_SIDE_ONLY   */
 
 /* Defined, this value will only enable the device side of usbx.  */
-/* #define UX_DEVICE_SIDE_ONLY   */
+#define UX_DEVICE_SIDE_ONLY
 
 /* Defined, this value will include the OTG polling thread. OTG can only be active if both host/device are present.
 */
