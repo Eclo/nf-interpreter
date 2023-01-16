@@ -227,7 +227,7 @@ void usbx_cdc_acm_read_thread_entry(ULONG arg)
         if (device->ux_slave_device_state == UX_DEVICE_CONFIGURED)
         {
             /* Get Data interface */
-            data_interface = device->ux_slave_device_first_interface->ux_slave_interface_next_interface;
+            data_interface = device->ux_slave_device_first_interface;//->ux_slave_interface_next_interface;
 
             /* Compares two memory blocks ux_slave_class_name and _ux_system_slave_class_cdc_acm_name */
             ux_status = ux_utility_memory_compare(

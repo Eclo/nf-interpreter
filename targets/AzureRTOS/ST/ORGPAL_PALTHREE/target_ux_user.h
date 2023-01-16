@@ -25,7 +25,7 @@
 /* Define various build options for the USBX port.  The application should either make changes
    here by commenting or un-commenting the conditional compilation defined OR supply the defines 
    though the compiler's equivalent of the -D option.  */
-/* #define UX_THREAD_STACK_SIZE                                (2 * 1024) */
+// #define UX_THREAD_STACK_SIZE                                (2 * 1024)
 
 /* Define USBX Host Enum Thread Stack Size. The default is to use UX_THREAD_STACK_SIZE */
 /* 
@@ -129,7 +129,7 @@
    is 4096 bytes but can be reduced in memory constrained environments. For cd-rom support in the storage 
    class, this value cannot be less than 2048.  */
 
-#define UX_SLAVE_REQUEST_DATA_MAX_LENGTH    (1024 * 2)
+#define UX_SLAVE_REQUEST_DATA_MAX_LENGTH    2048
 
 
 /* Defined, this value includes code to handle storage Multi-Media Commands (MMC). E.g., DVD-ROM.
@@ -150,20 +150,20 @@
 /* Defined, this value represents the maximum number of Ed, regular TDs and Isochronous TDs. These values
    depend on the type of host controller and can be reduced in memory constrained environments.  */
 
-#define UX_MAX_ED                                           80
-#define UX_MAX_TD                                           128
-#define UX_MAX_ISO_TD                                       1
+// #define UX_MAX_ED                                           80
+// #define UX_MAX_TD                                           128
+// #define UX_MAX_ISO_TD                                       1
 
 /* Defined, this value represents the maximum size of the HID decompressed buffer. This cannot be determined
    in advance so we allocate a big block, usually 4K but for simple HID devices like keyboard and mouse
    it can be reduced a lot. */
 
-#define UX_HOST_CLASS_HID_DECOMPRESSION_BUFFER              4096
+// #define UX_HOST_CLASS_HID_DECOMPRESSION_BUFFER              4096
 
 /* Defined, this value represents the maximum number of HID usages for a HID device. 
    Default is 2048 but for simple HID devices like keyboard and mouse it can be reduced a lot. */
 
-#define UX_HOST_CLASS_HID_USAGES                            2048
+// #define UX_HOST_CLASS_HID_USAGES                            2048
 
 
 /* By default, each key in each HID report from the device is reported by ux_host_class_hid_keyboard_key_get 
@@ -202,7 +202,7 @@
 /* Defined, this value represents the maximum number of media for the host storage class. 
    Default is 8 but for memory constrained resource systems this can ne reduced to 1. */
 
-#define UX_HOST_CLASS_STORAGE_MAX_MEDIA                     2
+// #define UX_HOST_CLASS_STORAGE_MAX_MEDIA                     2
 
 /* Defined, this value includes code to handle storage devices that use the CB
    or CBI protocol (such as floppy disks). It is off by default because these 
@@ -222,7 +222,7 @@
    The default is 16.
 */
 
-#define UX_DEVICE_CLASS_CDC_ECM_NX_PKPOOL_ENTRIES           4
+// #define UX_DEVICE_CLASS_CDC_ECM_NX_PKPOOL_ENTRIES           4
 
 /* Defined, this value represents the number of packets in the CDC_ECM host class.
    The default is 16.
@@ -327,11 +327,11 @@
 /* Defined, this value represents the maximum size of single tansfers for the SCSI data phase.
 */
 
-#define UX_HOST_CLASS_STORAGE_MAX_TRANSFER_SIZE             (1024 * 1)
+// #define UX_HOST_CLASS_STORAGE_MAX_TRANSFER_SIZE             (1024 * 1)
 
 /* Defined, this value represents the size of the log pool.
 */
-#define UX_DEBUG_LOG_SIZE                                   (1024 * 16)
+// #define UX_DEBUG_LOG_SIZE                                   (1024 * 16)
 
 
 /* Defined, this enables the assert checks inside usbx.  */
@@ -351,5 +351,7 @@
 #endif 
 
 #endif 
+
+//#define UX_NAME_REFERENCED_BY_POINTER
 
 // clang-format on

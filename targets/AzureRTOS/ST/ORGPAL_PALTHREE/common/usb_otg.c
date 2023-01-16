@@ -37,9 +37,8 @@ void MX_USB_OTG_FS_PCD_Init(void)
     hpcd_USB_OTG_FS.Init.Sof_enable = DISABLE;
     hpcd_USB_OTG_FS.Init.low_power_enable = DISABLE;
     hpcd_USB_OTG_FS.Init.lpm_enable = DISABLE;
-    hpcd_USB_OTG_FS.Init.vbus_sensing_enable = ENABLE;
+    hpcd_USB_OTG_FS.Init.vbus_sensing_enable = DISABLE;
     hpcd_USB_OTG_FS.Init.use_dedicated_ep1 = DISABLE;
-    hpcd_USB_OTG_FS.Init.use_external_vbus = DISABLE;
     if (HAL_PCD_Init(&hpcd_USB_OTG_FS) != HAL_OK)
     {
         Error_Handler();
@@ -50,11 +49,28 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *pcdHandle)
 {
 
     GPIO_InitTypeDef GPIO_InitStruct = {0};
+    //RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+
     if (pcdHandle->Instance == USB_OTG_FS)
     {
         /* USER CODE BEGIN USB_OTG_HS_MspInit 0 */
 
         /* USER CODE END USB_OTG_HS_MspInit 0 */
+
+    /* Select PLLSAI output as USB clock source */
+
+    //     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_CLK48;
+    // PeriphClkInitStruct.PLLSAI.PLLSAIN = 192;
+    // PeriphClkInitStruct.PLLSAI.PLLSAIR = 2;
+    // PeriphClkInitStruct.PLLSAI.PLLSAIQ = 2;
+    // PeriphClkInitStruct.PLLSAI.PLLSAIP = RCC_PLLSAIP_DIV2;
+    // PeriphClkInitStruct.PLLSAIDivQ = 1;
+    // PeriphClkInitStruct.PLLSAIDivR = RCC_PLLSAIDIVR_2;
+    // PeriphClkInitStruct.Clk48ClockSelection = RCC_CLK48SOURCE_PLLSAIP;
+    // if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+    // {
+    //   Error_Handler();
+    // }
 
         __HAL_RCC_GPIOA_CLK_ENABLE();
         /* USB_OTG_FS GPIO Configuration
@@ -68,7 +84,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *pcdHandle)
         GPIO_InitStruct.Pin = (GPIO_PIN_11 | GPIO_PIN_12);
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
         GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 

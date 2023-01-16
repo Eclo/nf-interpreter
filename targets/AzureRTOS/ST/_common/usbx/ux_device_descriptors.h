@@ -14,6 +14,7 @@ extern "C"
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include <ux_user.h>
 #include <ux_api.h>
 #include <ux_stm32_config.h>
 #include <wp_uart_config.h>
@@ -25,9 +26,9 @@ extern "C"
 
 /* Private defines -----------------------------------------------------------*/
 #define USBD_MAX_NUM_CONFIGURATION 1U
-#define USBD_MAX_SUPPORTED_CLASS   3U
-#define USBD_MAX_CLASS_ENDPOINTS   9U
-#define USBD_MAX_CLASS_INTERFACES  9U
+//#define USBD_MAX_SUPPORTED_CLASS   3U
+#define USBD_MAX_CLASS_ENDPOINTS   4U
+#define USBD_MAX_CLASS_INTERFACES  4U
 
 #define USBD_CDC_ACM_CLASS_ACTIVATED 1U
 
@@ -88,7 +89,7 @@ extern "C"
         uint8_t Speed;
         uint32_t classId;
         uint32_t NumClasses;
-        USBD_CompositeElementTypeDef tclasslist[USBD_MAX_SUPPORTED_CLASS];
+        USBD_CompositeElementTypeDef tclasslist[UX_MAX_CLASSES];
         uint32_t CurrDevDescSz;
         uint32_t CurrConfDescSz;
     } USBD_DevClassHandleTypeDef;

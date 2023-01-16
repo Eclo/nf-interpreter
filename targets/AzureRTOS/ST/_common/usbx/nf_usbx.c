@@ -7,13 +7,13 @@
 #include <nf_usbx.h>
 
 // byte pool for UsbX
-#define UX_DEVICE_APP_MEM_POOL_SIZE 1024 * 16
-#define USBX_MEMORY_SIZE            (12 * 1024)
+#define UX_DEVICE_APP_MEM_POOL_SIZE 1024 * 26
+#define USBX_MEMORY_SIZE            (20 * 1024)
 
 #if defined(__GNUC__)
 __attribute__((section(".UsbxPoolSection")))
 #endif
-uint8_t ux_device_byte_pool_buffer[UX_DEVICE_APP_MEM_POOL_SIZE];
+uint8_t ux_device_byte_pool_buffer[UX_DEVICE_APP_MEM_POOL_SIZE + 32];
 TX_BYTE_POOL ux_device_app_byte_pool;
 
 TX_THREAD ux_app_thread;
@@ -29,6 +29,7 @@ UX_SLAVE_CLASS_CDC_ACM_PARAMETER cdc_acm_parameter;
 
 void usbx_app_thread_entry(uint32_t arg);
 
+extern void HAL_AssertEx();
 extern void MX_USB_OTG_FS_PCD_Init(void);
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
@@ -40,7 +41,7 @@ uint32_t NF_UsbX_Init()
         &ux_device_app_byte_pool,
         "Ux App memory pool",
         ux_device_byte_pool_buffer,
-        UX_DEVICE_APP_MEM_POOL_SIZE);
+        sizeof(ux_device_byte_pool_buffer));
     if (ret != UX_SUCCESS)
     {
         HAL_AssertEx();
@@ -51,16 +52,12 @@ uint32_t NF_UsbX_Init()
     uint8_t *pointer;
     /* Device framework FS length*/
     uint32_t device_framework_fs_length;
-    /* Device framework HS length*/
-    uint32_t device_framework_hs_length;
     /* Device String framework length*/
     uint32_t string_framework_length;
     /* Device language id framework length*/
     uint32_t languge_id_framework_length;
     /* Device Framework Full Speed */
     uint8_t *device_framework_full_speed;
-    /* Device Framework High Speed */
-    uint8_t *device_framework_high_speed;
     /* String Framework*/
     uint8_t *string_framework;
     /* Language_Id_Framework*/
@@ -78,10 +75,13 @@ uint32_t NF_UsbX_Init()
     }
 
     /* Initialize USBX Memory */
-    ux_system_initialize(pointer, USBX_MEMORY_SIZE, UX_NULL, 0);
-
-    /* Get_Device_Framework_High_Speed and get the length */
-    device_framework_high_speed = USBD_Get_Device_Framework_Speed(USBD_HIGH_SPEED, &device_framework_hs_length);
+    ret = ux_system_initialize(pointer, USBX_MEMORY_SIZE, UX_NULL, 0);
+    
+    /* Check initialize status */
+    if (ret != UX_SUCCESS)
+    {
+        HAL_AssertEx();
+    }
 
     /* Get_Device_Framework_Full_Speed and get the length */
     device_framework_full_speed = USBD_Get_Device_Framework_Speed(USBD_FULL_SPEED, &device_framework_fs_length);
@@ -95,8 +95,8 @@ uint32_t NF_UsbX_Init()
     /* The code below is required for installing the device portion of USBX.
     In this application */
     ret = _ux_device_stack_initialize(
-        device_framework_high_speed,
-        device_framework_hs_length,
+        NULL,
+        0,
         device_framework_full_speed,
         device_framework_fs_length,
         string_framework,
@@ -157,8 +157,14 @@ uint32_t NF_UsbX_Init()
         TX_NO_TIME_SLICE,
         TX_AUTO_START);
 
+    /* Check usbx_app_thread_entry creation */
+    if (UX_SUCCESS != tx_status)
+    {
+        HAL_AssertEx();
+    }
+
     /* Allocate the stack for usbx_cdc_acm_read_thread_entry. */
-    tx_status = tx_byte_allocate(&ux_device_app_byte_pool, (void **)&pointer, USBX_APP_STACK_SIZE, TX_NO_WAIT);
+    tx_status = tx_byte_allocate(&ux_device_app_byte_pool, (void **)&pointer, USBX_APP_STACK_SIZE * 2, TX_NO_WAIT);
 
     /* Check memory allocation */
     if (TX_SUCCESS != tx_status)
@@ -186,7 +192,7 @@ uint32_t NF_UsbX_Init()
     }
 
     /* Allocate the stack for usbx_cdc_acm_write_thread_entry. */
-    tx_status = tx_byte_allocate(&ux_device_app_byte_pool, (void **)&pointer, USBX_APP_STACK_SIZE, TX_NO_WAIT);
+    tx_status = tx_byte_allocate(&ux_device_app_byte_pool, (void **)&pointer, USBX_APP_STACK_SIZE * 2, TX_NO_WAIT);
 
     /* Check memory allocation */
     if (TX_SUCCESS != tx_status)
@@ -232,11 +238,16 @@ void usbx_app_thread_entry(uint32_t arg)
     MX_USB_OTG_FS_PCD_Init();
 
     /* Set Rx FIFO */
-    HAL_PCDEx_SetRxFiFo(&hpcd_USB_OTG_FS, 0x200);
+    HAL_PCDEx_SetRxFiFo(&hpcd_USB_OTG_FS, 0x100);
+
     /* Set Tx FIFO 0 */
-    HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 0, 0x80);
-    /* Set Tx FIFO 1 */
-    HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 1, 0x174);
+    HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 0, 0x10);
+
+    /* Set Tx FIFO 2 */
+    HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 2, 0x10);
+
+    /* Set Tx FIFO 3 */
+    HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 3, 0x20);
 
     /* USER CODE END USB_Device_Init_PreTreatment_1 */
 

@@ -87,6 +87,7 @@ if(RTOS_AZURERTOS_CHECK)
         list(APPEND STM32F7_CubePackage_SRCS ux_device_cdc_acm.c)
         list(APPEND STM32F7_CubePackage_SRCS ux_device_descriptors.c)
         list(APPEND STM32F7_CubePackage_SRCS usb_otg.c)
+        list(APPEND STM32F7_CubePackage_SRCS nf_usbx.c)
        
         # add exception to compiler warnings as errors
         SET_SOURCE_FILES_PROPERTIES(${azrtos_xcube_f7_SOURCE_DIR}/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_callback.c PROPERTIES COMPILE_FLAGS -Wno-unused-parameter)

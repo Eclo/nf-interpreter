@@ -6,7 +6,6 @@
 #ifndef NF_USBX_H_
 #define NF_USBX_H_
 
-#include <nanoHAL_v2.h>
 #include <target_ux_user.h>
 #include <tx_api.h>
 #include <ux_api.h>
