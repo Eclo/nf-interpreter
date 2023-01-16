@@ -231,7 +231,7 @@ void usbx_cdc_acm_read_thread_entry(ULONG arg)
 
             /* Compares two memory blocks ux_slave_class_name and _ux_system_slave_class_cdc_acm_name */
             ux_status = ux_utility_memory_compare(
-                data_interface->ux_slave_interface_class->ux_slave_class_name,
+                *(UCHAR**)data_interface->ux_slave_interface_class->ux_slave_class_name,
                 _ux_system_slave_class_cdc_acm_name,
                 ux_utility_string_length_get(_ux_system_slave_class_cdc_acm_name));
 

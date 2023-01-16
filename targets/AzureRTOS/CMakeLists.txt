@@ -462,7 +462,10 @@ endif()
 
 set(TARGET_BASE_LOCATION_BINARY ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_VENDOR}/${TARGET_BOARD})
 set(TX_USER_FILE ${TARGET_BASE_LOCATION}/target_tx_user.h CACHE STRING "Enable TX user configuration")
-set(UX_USER_FILE ${TARGET_BASE_LOCATION}/target_ux_user.h CACHE STRING "Enable USBX user configuration")
+
+if(AZURERTOS_USBX_REQUIRED)
+    set(UX_USER_FILE ${TARGET_BASE_LOCATION}/target_ux_user.h CACHE STRING "Enable USBX user configuration")
+endif()
 
 ##############################
 # AzureRTOS common directories

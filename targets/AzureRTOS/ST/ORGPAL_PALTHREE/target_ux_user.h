@@ -129,7 +129,7 @@
    is 4096 bytes but can be reduced in memory constrained environments. For cd-rom support in the storage 
    class, this value cannot be less than 2048.  */
 
-#define UX_SLAVE_REQUEST_DATA_MAX_LENGTH    2048
+// #define UX_SLAVE_REQUEST_DATA_MAX_LENGTH    2048
 
 
 /* Defined, this value includes code to handle storage Multi-Media Commands (MMC). E.g., DVD-ROM.
@@ -352,6 +352,6 @@
 
 #endif 
 
-//#define UX_NAME_REFERENCED_BY_POINTER
+#define UX_NAME_REFERENCED_BY_POINTER
 
 // clang-format on
