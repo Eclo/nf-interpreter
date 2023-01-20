@@ -37,6 +37,10 @@ macro(nf_set_compile_options)
     # - STM series
     target_compile_definitions(${NFSCO_TARGET} PUBLIC -DPLATFORM_ARM -DCORTEX_USE_FPU=TRUE -DUSE_FPU=TRUE -DSTM32L4XX -DTX_INCLUDE_USER_DEFINE_FILE )
 
+    if(AZURERTOS_USBX_REQUIRED)
+        target_compile_definitions(${NFSCO_TARGET} PUBLIC -DUX_INCLUDE_USER_DEFINE_FILE)
+    endif()
+
 endmacro()
 
 
