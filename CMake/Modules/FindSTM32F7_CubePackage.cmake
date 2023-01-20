@@ -42,6 +42,10 @@ set(STM32F7_CubePackage_SRCS
     stm32f7xx_hal_gpio.c
     stm32f7xx_hal_pwr_ex.c
     stm32f7xx_hal_tim.c
+    stm32f7xx_ll_fmc.c
+    stm32f7xx_hal_sdram.c
+    stm32f7xx_hal_wwdg.c
+    stm32f7xx_hal_flash.c
 
     stm32f7xx_hal_dma.c
     stm32f7xx_hal_qspi.c

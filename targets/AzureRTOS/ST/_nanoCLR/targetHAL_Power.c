@@ -3,7 +3,7 @@
 // See LICENSE file in the project root for full license information.
 //
 
-#include <hal.h>
+#include <stm32f7xx_hal.h>
 
 #include <nanoHAL_Power.h>
 #include <nanoHAL_v2.h>
@@ -49,7 +49,8 @@ void CPU_SetPowerMode(PowerLevel_type powerLevel)
     {
         case PowerLevel__Off:
             // stop watchdog
-            wdgStop(&WDGD1);
+            // TODO
+           // wdgStop(&WDGD1);
 
 // shutdown memory
 #if defined(STM32_USE_FSMC_SDRAM) && (STM32_USE_FSMC_SDRAM == TRUE)

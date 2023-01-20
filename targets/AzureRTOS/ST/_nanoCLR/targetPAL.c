@@ -3,34 +3,45 @@
 // See LICENSE file in the project root for full license information.
 //
 
-#include <hal.h>
+#include <stm32f7xx_hal.h>
 
-stm32_gpio_t* gpioPort[] = { GPIOA, GPIOB
-#if STM32_HAS_GPIOC
-, GPIOC
+GPIO_TypeDef *gpioPort[] = {
+    GPIOA,
+    GPIOB
+#ifdef GPIOC
+    ,
+    GPIOC
 #endif
-#if STM32_HAS_GPIOD
-, GPIOD
+#ifdef GPIOD
+    ,
+    GPIOD
 #endif
-#if STM32_HAS_GPIOE
-, GPIOE
+#ifdef GPIOE
+    ,
+    GPIOE
 #endif
-#if STM32_HAS_GPIOF
-, GPIOF
+#ifdef GPIOF
+    ,
+    GPIOF
 #endif
-#if STM32_HAS_GPIOG
-, GPIOG
+#ifdef GPIOG
+    ,
+    GPIOG
 #endif
-#if STM32_HAS_GPIOH
-, GPIOH
+#ifdef GPIOH
+    ,
+    GPIOH
 #endif
-#if STM32_HAS_GPIOI
-, GPIOI
+#ifdef GPIOI
+    ,
+    GPIOI
 #endif
-#if STM32_HAS_GPIOJ
-, GPIOJ
+#ifdef GPIOJ
+    ,
+    GPIOJ
 #endif
-#if STM32_HAS_GPIOK
-, GPIOK
+#ifdef GPIOK
+    ,
+    GPIOK
 #endif
 };

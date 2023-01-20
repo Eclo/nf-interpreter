@@ -6,12 +6,12 @@
 #ifndef _TARGETPAL_H_
 #define _TARGETPAL_H_
 
-#include <hal.h>
+#include <stm32f7xx_hal.h>
 
 // Contains available GPIO ports for the current board
-extern stm32_gpio_t* gpioPort[];
+extern GPIO_TypeDef *gpioPort[];
 
-//Gets the GPIO according to a pin number
-#define GPIO_PORT(pin) (gpioPort[pin/16])
+// Gets the GPIO according to a pin number
+#define GPIO_PORT(pin) (gpioPort[pin / 16])
 
 #endif // _TARGETPAL_H_

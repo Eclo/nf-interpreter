@@ -3,7 +3,7 @@
 // See LICENSE file in the project root for full license information.
 //
 
-#include <hal.h>
+#include <stm32f7xx_hal.h>
 
 #include <nanoHAL.h>
 #include <nanoHAL_Types.h>
@@ -16,41 +16,44 @@
 // Returns the current date time from the RTC
 uint64_t HAL_Time_CurrentDateTime(bool datePartOnly)
 {
+    (void)datePartOnly;
 #if (HAL_USE_RTC == TRUE)
 
+
+    // TODO
     // use RTC to get date time
-    SYSTEMTIME st;
-    RTCDateTime _dateTime;
+    //SYSTEMTIME st;
+    // RTCDateTime _dateTime;
 
-    rtcGetTime(&RTCD1, &_dateTime);
+    // rtcGetTime(&RTCD1, &_dateTime);
 
-    st.wDay = (unsigned short)_dateTime.day;
-    st.wMonth = (unsigned short)_dateTime.month;
-    st.wYear = (unsigned short)(_dateTime.year + 1980); // ChibiOS is counting years since 1980
-    st.wDayOfWeek = (unsigned short)_dateTime.dayofweek;
+    // st.wDay = (unsigned short)_dateTime.day;
+    // st.wMonth = (unsigned short)_dateTime.month;
+    // st.wYear = (unsigned short)(_dateTime.year + 1980); // ChibiOS is counting years since 1980
+    // st.wDayOfWeek = (unsigned short)_dateTime.dayofweek;
 
-    // zero 'time' fields if date part only is required
-    if (datePartOnly)
-    {
-        st.wMilliseconds = 0;
-        st.wSecond = 0;
-        st.wMinute = 0;
-        st.wHour = 0;
-    }
-    else
-    {
-        // full date&time required, fill in 'time' fields too
+    // // zero 'time' fields if date part only is required
+    // if (datePartOnly)
+    // {
+    //     st.wMilliseconds = 0;
+    //     st.wSecond = 0;
+    //     st.wMinute = 0;
+    //     st.wHour = 0;
+    // }
+    // else
+    // {
+    //     // full date&time required, fill in 'time' fields too
 
-        st.wMilliseconds = (unsigned short)(_dateTime.millisecond % 1000);
-        _dateTime.millisecond /= 1000;
-        st.wSecond = (unsigned short)(_dateTime.millisecond % 60);
-        _dateTime.millisecond /= 60;
-        st.wMinute = (unsigned short)(_dateTime.millisecond % 60);
-        _dateTime.millisecond /= 60;
-        st.wHour = (unsigned short)(_dateTime.millisecond % 24);
-    }
+    //     st.wMilliseconds = (unsigned short)(_dateTime.millisecond % 1000);
+    //     _dateTime.millisecond /= 1000;
+    //     st.wSecond = (unsigned short)(_dateTime.millisecond % 60);
+    //     _dateTime.millisecond /= 60;
+    //     st.wMinute = (unsigned short)(_dateTime.millisecond % 60);
+    //     _dateTime.millisecond /= 60;
+    //     st.wHour = (unsigned short)(_dateTime.millisecond % 24);
+    // }
 
-    return HAL_Time_ConvertFromSystemTime(&st);
+    return 0;//HAL_Time_ConvertFromSystemTime(&st);
 
 #else
 
@@ -80,29 +83,30 @@ void HAL_Time_SetUtcTime(uint64_t utcTime)
 
     HAL_Time_ToSystemTime(utcTime, &systemTime);
 
-#if (HAL_USE_RTC == TRUE)
+// TODO
+// #if (HAL_USE_RTC == TRUE)
 
-    // set RTC
-    RTCDateTime newTime;
+//     // set RTC
+//     RTCDateTime newTime;
 
-    newTime.year = systemTime.wYear - 1980; // ChibiOS time base is 1980-01-01
-    newTime.month = systemTime.wMonth;
-    newTime.day = systemTime.wDay;
-    newTime.dayofweek = systemTime.wDayOfWeek;
-    newTime.millisecond =
-        ((((uint32_t)systemTime.wHour * 3600) + ((uint32_t)systemTime.wMinute * 60) + (uint32_t)systemTime.wSecond) *
-         1000);
+//     newTime.year = systemTime.wYear - 1980; // ChibiOS time base is 1980-01-01
+//     newTime.month = systemTime.wMonth;
+//     newTime.day = systemTime.wDay;
+//     newTime.dayofweek = systemTime.wDayOfWeek;
+//     newTime.millisecond =
+//         ((((uint32_t)systemTime.wHour * 3600) + ((uint32_t)systemTime.wMinute * 60) + (uint32_t)systemTime.wSecond) *
+//          1000);
 
-    // set RTC time
-    rtcSetTime(&RTCD1, &newTime);
+//     // set RTC time
+//     rtcSetTime(&RTCD1, &newTime);
 
-#else
+// #else
 
-    // TODO FIXME
-    // need to add implementation when RTC is not being used
-    // can't mess with the systicks because the scheduling can fail
+//     // TODO FIXME
+//     // need to add implementation when RTC is not being used
+//     // can't mess with the systicks because the scheduling can fail
 
-#endif
+// #endif
 }
 
 bool HAL_Time_TimeSpanToStringEx(const int64_t &ticks, char *&buf, size_t &len)
