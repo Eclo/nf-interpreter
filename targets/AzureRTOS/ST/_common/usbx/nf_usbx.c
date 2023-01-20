@@ -7,12 +7,13 @@
 #include <nf_usbx.h>
 
 // byte pool for UsbX
-#define UX_DEVICE_APP_MEM_POOL_SIZE 1024 * 26
-#define USBX_MEMORY_SIZE            (20 * 1024)
+#define UX_DEVICE_APP_MEM_POOL_SIZE 1024 * 65
+#define USBX_MEMORY_SIZE            (64 * 1024)
+#define US_THREADS_PRIORITY_CLASS   5
 
-#if defined(__GNUC__)
-__attribute__((section(".UsbxPoolSection")))
-#endif
+// #if defined(__GNUC__)
+// __attribute__((section(".UsbxPoolSection")))
+//#endif
 uint8_t ux_device_byte_pool_buffer[UX_DEVICE_APP_MEM_POOL_SIZE + 32];
 TX_BYTE_POOL ux_device_app_byte_pool;
 
@@ -22,10 +23,15 @@ TX_THREAD ux_cdc_write_thread;
 
 TX_EVENT_FLAGS_GROUP EventFlag;
 
+#define UX_APP_THREAD_STACK_SIZE 1024 * 2
+static uint32_t ux_app_threadStack[UX_APP_THREAD_STACK_SIZE / sizeof(uint32_t)];
+#define CDC_READ_THREAD_STACK_SIZE 1024 * 2
+static uint32_t ux_cdc_read_threadStack[CDC_READ_THREAD_STACK_SIZE / sizeof(uint32_t)];
+#define CDC_WRITE_THREAD_STACK_SIZE 1024 * 2
+static uint32_t ux_cdc_write_threadStack[CDC_WRITE_THREAD_STACK_SIZE / sizeof(uint32_t)];
+
 /* CDC Class Calling Parameter structure */
 UX_SLAVE_CLASS_CDC_ACM_PARAMETER cdc_acm_parameter;
-
-#define USBX_APP_STACK_SIZE 1024
 
 void usbx_app_thread_entry(uint32_t arg);
 
@@ -76,7 +82,7 @@ uint32_t NF_UsbX_Init()
 
     /* Initialize USBX Memory */
     ret = ux_system_initialize(pointer, USBX_MEMORY_SIZE, UX_NULL, 0);
-    
+
     /* Check initialize status */
     if (ret != UX_SUCCESS)
     {
@@ -135,39 +141,21 @@ uint32_t NF_UsbX_Init()
         HAL_AssertEx();
     }
 
-    /* Allocate the stack for main_usbx_app_thread_entry. */
-    tx_status = tx_byte_allocate(&ux_device_app_byte_pool, (void **)&pointer, USBX_APP_STACK_SIZE, TX_NO_WAIT);
-
-    /* Check memory allocation */
-    if (TX_SUCCESS != tx_status)
-    {
-        HAL_AssertEx();
-    }
-
     /* Create the usbx_app_thread_entry main thread. */
     tx_status = tx_thread_create(
         &ux_app_thread,
         "main_usbx_app_thread_entry",
         usbx_app_thread_entry,
         0,
-        pointer,
-        USBX_APP_STACK_SIZE,
-        5,
-        5,
+        &ux_app_threadStack,
+        UX_APP_THREAD_STACK_SIZE,
+        US_THREADS_PRIORITY_CLASS,
+        US_THREADS_PRIORITY_CLASS,
         TX_NO_TIME_SLICE,
         TX_AUTO_START);
 
     /* Check usbx_app_thread_entry creation */
     if (UX_SUCCESS != tx_status)
-    {
-        HAL_AssertEx();
-    }
-
-    /* Allocate the stack for usbx_cdc_acm_read_thread_entry. */
-    tx_status = tx_byte_allocate(&ux_device_app_byte_pool, (void **)&pointer, USBX_APP_STACK_SIZE * 2, TX_NO_WAIT);
-
-    /* Check memory allocation */
-    if (TX_SUCCESS != tx_status)
     {
         HAL_AssertEx();
     }
@@ -178,23 +166,14 @@ uint32_t NF_UsbX_Init()
         "cdc_acm_read_usbx_app_thread_entry",
         usbx_cdc_acm_read_thread_entry,
         1,
-        pointer,
-        USBX_APP_STACK_SIZE,
-        5,
-        5,
+        &ux_cdc_read_threadStack,
+        CDC_READ_THREAD_STACK_SIZE,
+        US_THREADS_PRIORITY_CLASS,
+        US_THREADS_PRIORITY_CLASS,
         TX_NO_TIME_SLICE,
         TX_AUTO_START);
 
     /* Check usbx_cdc_acm_read_thread_entry creation */
-    if (TX_SUCCESS != tx_status)
-    {
-        HAL_AssertEx();
-    }
-
-    /* Allocate the stack for usbx_cdc_acm_write_thread_entry. */
-    tx_status = tx_byte_allocate(&ux_device_app_byte_pool, (void **)&pointer, USBX_APP_STACK_SIZE * 2, TX_NO_WAIT);
-
-    /* Check memory allocation */
     if (TX_SUCCESS != tx_status)
     {
         HAL_AssertEx();
@@ -206,10 +185,10 @@ uint32_t NF_UsbX_Init()
         "cdc_acm_write_usbx_app_thread_entry",
         usbx_cdc_acm_write_thread_entry,
         1,
-        pointer,
-        USBX_APP_STACK_SIZE,
-        5,
-        5,
+        &ux_cdc_write_threadStack,
+        CDC_WRITE_THREAD_STACK_SIZE,
+        US_THREADS_PRIORITY_CLASS,
+        US_THREADS_PRIORITY_CLASS,
         TX_NO_TIME_SLICE,
         TX_AUTO_START);
 
@@ -238,16 +217,15 @@ void usbx_app_thread_entry(uint32_t arg)
     MX_USB_OTG_FS_PCD_Init();
 
     /* Set Rx FIFO */
-    HAL_PCDEx_SetRxFiFo(&hpcd_USB_OTG_FS, 0x100);
+    HAL_PCDEx_SetRxFiFo(&hpcd_USB_OTG_FS, 0x200);
 
     /* Set Tx FIFO 0 */
-    HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 0, 0x10);
+    HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 0, 0x40);
+    /* Set Tx FIFO 1 */
+    HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 1, 0x200);
 
-    /* Set Tx FIFO 2 */
-    HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 2, 0x10);
-
-    /* Set Tx FIFO 3 */
-    HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 3, 0x20);
+    // /* Set Tx FIFO 3 */
+    // HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 3, 0x20);
 
     /* USER CODE END USB_Device_Init_PreTreatment_1 */
 
