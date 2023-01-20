@@ -82,7 +82,7 @@
 
 /* Defined, this value is the maximum number of interfaces in the device framework.  */
 
-#define UX_MAX_SLAVE_INTERFACES    4
+#define UX_MAX_SLAVE_INTERFACES    2
 
 /* Defined, this value represents the number of different host controllers available in the system. 
    For USB 1.1 support, this value will usually be 1. For USB 2.0 support, this value can be more 
@@ -120,16 +120,14 @@
 /* Defined, this value represents the maximum number of bytes received on a control endpoint in
    the device stack. The default is 256 bytes but can be reduced in memory constrained environments.  */
 
-/* #define UX_SLAVE_REQUEST_CONTROL_MAX_LENGTH 256
-*/
-
+//#define UX_SLAVE_REQUEST_CONTROL_MAX_LENGTH 512
 
 /* Defined, this value represents the maximum number of bytes that can be received or transmitted
    on any endpoint. This value cannot be less than the maximum packet size of any endpoint. The default 
    is 4096 bytes but can be reduced in memory constrained environments. For cd-rom support in the storage 
    class, this value cannot be less than 2048.  */
 
-// #define UX_SLAVE_REQUEST_DATA_MAX_LENGTH    2048
+#define UX_SLAVE_REQUEST_DATA_MAX_LENGTH    4096
 
 
 /* Defined, this value includes code to handle storage Multi-Media Commands (MMC). E.g., DVD-ROM.
@@ -140,7 +138,7 @@
 
 /* Defined, this value represents the maximum number of bytes that a storage payload can send/receive.
    The default is 8K bytes but can be reduced in memory constrained environments.  */
-#define UX_HOST_CLASS_STORAGE_MEMORY_BUFFER_SIZE            (1024 * 8)
+//#define UX_HOST_CLASS_STORAGE_MEMORY_BUFFER_SIZE            (1024 * 8)
 
 /* Define USBX Mass Storage Thread Stack Size. The default is to use UX_THREAD_STACK_SIZE. */
 
@@ -305,7 +303,7 @@
 
 /* Defined, this macro enables device bi-directional-endpoint support.  */
 
-/* #define UX_DEVICE_BIDIRECTIONAL_ENDPOINT_SUPPORT  */
+#define UX_DEVICE_BIDIRECTIONAL_ENDPOINT_SUPPORT
 
 /* Defined, this value will only enable the host side of usbx.  */
 /* #define UX_HOST_SIDE_ONLY   */
@@ -335,7 +333,7 @@
 
 
 /* Defined, this enables the assert checks inside usbx.  */
-#define UX_ENABLE_ASSERT
+//#define UX_ENABLE_ASSERT
 
 /* Defined, this defines the assert action taken when failure detected. By default
    it halts without any output.  */
