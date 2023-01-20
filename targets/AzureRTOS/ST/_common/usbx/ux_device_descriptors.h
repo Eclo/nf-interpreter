@@ -26,7 +26,7 @@ extern "C"
 
 /* Private defines -----------------------------------------------------------*/
 #define USBD_MAX_NUM_CONFIGURATION 1U
-//#define USBD_MAX_SUPPORTED_CLASS   3U
+#define USBD_MAX_SUPPORTED_CLASS   1U
 #define USBD_MAX_CLASS_ENDPOINTS   4U
 #define USBD_MAX_CLASS_INTERFACES  4U
 
@@ -89,7 +89,7 @@ extern "C"
         uint8_t Speed;
         uint32_t classId;
         uint32_t NumClasses;
-        USBD_CompositeElementTypeDef tclasslist[UX_MAX_CLASSES];
+        USBD_CompositeElementTypeDef tclasslist[USBD_MAX_SUPPORTED_CLASS];
         uint32_t CurrDevDescSz;
         uint32_t CurrConfDescSz;
     } USBD_DevClassHandleTypeDef;
@@ -249,20 +249,20 @@ extern "C"
 // check for defines for descriptors
 #ifndef USBD_VID
 // default to ST VID
-#define USBD_VID                 0x0483
+#define USBD_VID 0x0483
 #endif
 #ifndef USBD_PID
 // default to ST PID
-#define USBD_PID                 22288
+#define USBD_PID 22288
 #endif
 #ifndef USBD_LANGID_STRING
-#define USBD_LANGID_STRING       1033
+#define USBD_LANGID_STRING 1033
 #endif
 #ifndef USBD_MANUFACTURER_STRING
 #define USBD_MANUFACTURER_STRING "STMicroelectronics"
 #endif
 #ifndef USBD_PRODUCT_STRING
-#define USBD_PRODUCT_STRING      "nanoFramework Virtual COM Port"
+#define USBD_PRODUCT_STRING "nanoFramework Virtual COM Port"
 #endif
 
 #ifdef STM32F7XX

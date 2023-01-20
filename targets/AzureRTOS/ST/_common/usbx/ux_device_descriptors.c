@@ -347,9 +347,9 @@ static uint8_t *USBD_Device_Framework_Builder(
     }
 
     /* Build the device framework */
-    while (Idx_Instance < UX_MAX_CLASSES)
+    while (Idx_Instance < USBD_MAX_SUPPORTED_CLASS)
     {
-        if ((pdev->classId < UX_MAX_CLASSES) && (pdev->NumClasses < UX_MAX_CLASSES))
+        if ((pdev->classId < USBD_MAX_SUPPORTED_CLASS) && (pdev->NumClasses < USBD_MAX_SUPPORTED_CLASS))
         {
             /* Call the composite class builder */
             (void)USBD_FrameWork_AddClass(
@@ -408,7 +408,7 @@ uint8_t USBD_FrameWork_AddClass(
     uint8_t Speed,
     uint8_t *pCmpstConfDesc)
 {
-    if ((pdev->classId < UX_MAX_CLASSES) && (pdev->tclasslist[pdev->classId].Active == 0U))
+    if ((pdev->classId < USBD_MAX_SUPPORTED_CLASS) && (pdev->tclasslist[pdev->classId].Active == 0U))
     {
         /* Store the class parameters in the global tab */
         pdev->tclasslist[pdev->classId].ClassId = pdev->classId;
