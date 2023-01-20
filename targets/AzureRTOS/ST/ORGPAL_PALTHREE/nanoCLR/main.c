@@ -3,10 +3,8 @@
 // See LICENSE file in the project root for full license information.
 //
 
-#include <hal.h>
-#include <hal_nf_community.h>
+#include <stm32f7xx_hal.h>
 
-#include "usbcfg.h"
 #include <nanoCLR_Application.h>
 #include <nanoPAL_BlockStorage.h>
 #include <nanoHAL_v2.h>
@@ -54,6 +52,12 @@ TX_THREAD clrStartupThread;
 uint32_t clrStartupThreadStack[CLR_THREAD_STACK_SIZE / sizeof(uint32_t)];
 extern void ClrStartupThread_entry(uint32_t parameter);
 
+void SystemClock_Config(void);
+void PeriphCommonClock_Config(void);
+void MPU_Config(void);
+void MX_GPIO_Init(void);
+extern uint32_t NF_UsbX_Init(void);
+
 void tx_application_define(void *first_unused_memory)
 {
     (void)first_unused_memory;
@@ -65,10 +69,11 @@ void tx_application_define(void *first_unused_memory)
     // start watchdog
     Watchdog_Init();
 
-#if (HAL_NF_USE_STM32_CRC == TRUE)
-    // startup crc
-    crcStart(NULL);
-#endif
+// TODO
+// #if (HAL_NF_USE_STM32_CRC == TRUE)
+//     // startup crc
+//     crcStart(NULL);
+// #endif
 
 #if (TRACE_TO_STDIO == TRUE)
     StdioPort_Init();
@@ -172,32 +177,31 @@ int main(void)
 
     __ISB();
 
-    halInit();
+    MPU_Config();
+    SCB_EnableICache();
+    SCB_EnableDCache();
+    HAL_Init();
+    SystemClock_Config();
+    PeriphCommonClock_Config();
+    MX_GPIO_Init();
 
     // init boot clipboard
     InitBootClipboard();
-
-    // set default values for GPIOs
-    palClearPad(GPIOE, GPIOE_PIN4);
-    palClearLine(LINE_RELAY);
-    palSetPad(GPIOJ, GPIOJ_PIN13);
-    palClearPad(GPIOJ, GPIOJ_PIN14);
-    palClearLine(LINE_LCD_ENABLE);
 
     // config and init external memory
     // this has to be called after osKernelInitialize, otherwise an hard fault will occur
     Target_ExternalMemoryInit();
 
-    //  Initializes a serial-over-USB CDC driver.
-    sduObjectInit(&SERIAL_DRIVER);
-    sduStart(&SERIAL_DRIVER, &serusbcfg);
+    // //  Initializes a serial-over-USB CDC driver.
+    // sduObjectInit(&SERIAL_DRIVER);
+    // sduStart(&SERIAL_DRIVER, &serusbcfg);
 
-    // Activates the USB driver and then the USB bus pull-up on D+.
-    // Note, a delay is inserted in order to not have to disconnect the cable after a reset.
-    usbDisconnectBus(serusbcfg.usbp);
-    osalThreadSleepS(OSAL_MS2I(100));
-    usbStart(serusbcfg.usbp, &usbcfg);
-    usbConnectBus(serusbcfg.usbp);
+    // // Activates the USB driver and then the USB bus pull-up on D+.
+    // // Note, a delay is inserted in order to not have to disconnect the cable after a reset.
+    // usbDisconnectBus(serusbcfg.usbp);
+    // osalThreadSleepS(OSAL_MS2I(100));
+    // usbStart(serusbcfg.usbp, &usbcfg);
+    // usbConnectBus(serusbcfg.usbp);
 
     // Enter the ThreadX kernel
     tx_kernel_enter();
