@@ -61,7 +61,7 @@ extern uint32_t NF_UsbX_Init(void);
 void tx_application_define(void *first_unused_memory)
 {
     (void)first_unused_memory;
-    uint16_t status;
+    //uint16_t status;
 
     // Create a byte memory pool from which to allocate the thread stacks.
     tx_byte_pool_create(&byte_pool_0, "byte pool 0", memory_area, DEFAULT_BYTE_POOL_SIZE);
@@ -79,74 +79,74 @@ void tx_application_define(void *first_unused_memory)
     StdioPort_Init();
 #endif
 
-    // Create receiver thread
-    status = tx_thread_create(
-        &receiverThread,
-        "Receiver Thread",
-        ReceiverThread_entry,
-        0,
-        receiverThreadStack,
-        RECEIVER_THREAD_STACK_SIZE,
-        RECEIVER_THREAD_PRIORITY,
-        RECEIVER_THREAD_PRIORITY,
-        TX_NO_TIME_SLICE,
-        TX_AUTO_START);
+    // // Create receiver thread
+    // status = tx_thread_create(
+    //     &receiverThread,
+    //     "Receiver Thread",
+    //     ReceiverThread_entry,
+    //     0,
+    //     receiverThreadStack,
+    //     RECEIVER_THREAD_STACK_SIZE,
+    //     RECEIVER_THREAD_PRIORITY,
+    //     RECEIVER_THREAD_PRIORITY,
+    //     TX_NO_TIME_SLICE,
+    //     TX_AUTO_START);
 
-    if (status != TX_SUCCESS)
-    {
-        // TODO replace with proper handling
-        while (1)
-        {
-        }
-    }
+    // if (status != TX_SUCCESS)
+    // {
+    //     // TODO replace with proper handling
+    //     while (1)
+    //     {
+    //     }
+    // }
 
-    // Create NetX Duo thread
-    status = tx_thread_create(
-        & netxDuoThread,
-        "NetXDuo Thread",
-        NetXDuoThread_entry,
-        0,
-        netxDuoThreadStack,
-        RECEIVER_THREAD_STACK_SIZE,
-        RECEIVER_THREAD_PRIORITY,
-        RECEIVER_THREAD_PRIORITY,
-        TX_NO_TIME_SLICE,
-        TX_AUTO_START);
+    // // Create NetX Duo thread
+    // status = tx_thread_create(
+    //     & netxDuoThread,
+    //     "NetXDuo Thread",
+    //     NetXDuoThread_entry,
+    //     0,
+    //     netxDuoThreadStack,
+    //     RECEIVER_THREAD_STACK_SIZE,
+    //     RECEIVER_THREAD_PRIORITY,
+    //     RECEIVER_THREAD_PRIORITY,
+    //     TX_NO_TIME_SLICE,
+    //     TX_AUTO_START);
 
-    if (status != TX_SUCCESS)
-    {
-        while (1)
-        {
-        }
-    }
+    // if (status != TX_SUCCESS)
+    // {
+    //     while (1)
+    //     {
+    //     }
+    // }
 
-    // CLR settings to launch CLR thread
-    memset(&clrSettings, 0, sizeof(CLR_SETTINGS));
+    // // CLR settings to launch CLR thread
+    // memset(&clrSettings, 0, sizeof(CLR_SETTINGS));
 
-    clrSettings.MaxContextSwitches = 50;
-    clrSettings.WaitForDebugger = false;
-    clrSettings.EnterDebuggerLoopAfterExit = true;
+    // clrSettings.MaxContextSwitches = 50;
+    // clrSettings.WaitForDebugger = false;
+    // clrSettings.EnterDebuggerLoopAfterExit = true;
 
-    // Create CLR startup thread
-    status = tx_thread_create(
-        &clrStartupThread,
-        "CLR Thread",
-        ClrStartupThread_entry,
-        (uint32_t)&clrSettings,
-        clrStartupThreadStack,
-        CLR_THREAD_STACK_SIZE,
-        CLR_THREAD_PRIORITY,
-        CLR_THREAD_PRIORITY,
-        TX_NO_TIME_SLICE,
-        TX_AUTO_START);
+    // // Create CLR startup thread
+    // status = tx_thread_create(
+    //     &clrStartupThread,
+    //     "CLR Thread",
+    //     ClrStartupThread_entry,
+    //     (uint32_t)&clrSettings,
+    //     clrStartupThreadStack,
+    //     CLR_THREAD_STACK_SIZE,
+    //     CLR_THREAD_PRIORITY,
+    //     CLR_THREAD_PRIORITY,
+    //     TX_NO_TIME_SLICE,
+    //     TX_AUTO_START);
 
-    if (status != TX_SUCCESS)
-    {
-        // TODO replace with proper handling
-        while (1)
-        {
-        }
-    }
+    // if (status != TX_SUCCESS)
+    // {
+    //     // TODO replace with proper handling
+    //     while (1)
+    //     {
+    //     }
+    // }
 }
 
 //  Application entry point.
