@@ -63,16 +63,16 @@ void tx_application_define(void *first_unused_memory)
 
  NF_UsbX_Init();
 
-    // // initialize block storage list and devices
-    // // in CLR this is called in nanoHAL_Initialize()
-    // // for nanoBooter we have to init it in order to provide the flash map for Monitor_FlashSectorMap command
-    // BlockStorageList_Initialize();
-    // BlockStorage_AddDevices();
+    // initialize block storage list and devices
+    // in CLR this is called in nanoHAL_Initialize()
+    // for nanoBooter we have to init it in order to provide the flash map for Monitor_FlashSectorMap command
+    BlockStorageList_Initialize();
+    BlockStorage_AddDevices();
 
     // initialize configuration manager
     // in CLR this is called in nanoHAL_Initialize()
     // for nanoBooter we have to init it here to have access to network configuration blocks
-    // ConfigurationManager_Initialize();
+    ConfigurationManager_Initialize();
 
     // Create blink thread
     status = tx_thread_create(
@@ -114,18 +114,8 @@ void tx_application_define(void *first_unused_memory)
     //     }
     // }
 
-    // // in CLR this is called in nanoHAL_Initialize()
-    // // for nanoBooter we have to init it in order to provide the flash map for Monitor_FlashSectorMap command
-    // BlockStorageList_Initialize();
-    // BlockStorage_AddDevices();
-
-    // initialize configuration manager
-    // in CLR this is called in nanoHAL_Initialize()
-    // for nanoBooter we have to init it here to have access to network configuration blocks
-    // ConfigurationManager_Initialize();
-
     // report successfull nanoBooter execution
-    // ReportSuccessfullNanoBooter();
+    ReportSuccessfullNanoBooter();
 }
 
 //  Application entry point.
@@ -144,8 +134,8 @@ int main(void)
 
     // halInit();
 
-    // // init boot clipboard
-    // InitBootClipboard();
+    // init boot clipboard
+    InitBootClipboard();
 
     // the following IF is not mandatory, it's just providing a way for a user to 'force'
     // the board to remain in nanoBooter and not launching nanoCLR
@@ -157,14 +147,14 @@ int main(void)
         // the user button in this board has a pull-up resistor so the check has to be inverted
         if (HAL_GPIO_ReadPin(GPIOK, GPIO_PIN_7))
         {
-            // // check for valid CLR image
-            // // we are checking for a valid image right after the configuration block
-            // if (CheckValidCLRImage((uint32_t)&__nanoConfig_end__))
-            // {
-            //     // there seems to be a valid CLR image
-            //     // launch nanoCLR
-            //     LaunchCLR((uint32_t)&__nanoConfig_end__);
-            // }
+            // check for valid CLR image
+            // we are checking for a valid image right after the configuration block
+            if (CheckValidCLRImage((uint32_t)&__nanoConfig_end__))
+            {
+                // there seems to be a valid CLR image
+                // launch nanoCLR
+                LaunchCLR((uint32_t)&__nanoConfig_end__);
+            }
         }
     }
 

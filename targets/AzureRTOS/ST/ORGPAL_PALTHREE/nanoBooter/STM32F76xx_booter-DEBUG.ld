@@ -18,9 +18,16 @@ _Min_Stack_Size = 0x400 ; /* required amount of stack */
 /* Memories definition */
 MEMORY
 {
-  RAM    (xrw)    : ORIGIN = 0x20020000,   LENGTH = 368K
-  FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 2048K
+  RAM    (xrw)     : ORIGIN = 0x20020000,   LENGTH = 368k
+  bootclpbrd(xrw)  : ORIGIN = 0x20000000,   LENGTH = 48
+
+  FLASH    (rx)    : ORIGIN = 0x08000000,   LENGTH = 64k
+  config   (rx)    : ORIGIN = 0x08010000,   LENGTH = 32k
+  deployment (rx)  : ORIGIN = 0x00000000,   LENGTH = 32k
 }
+
+/* RAM region to be used for the boot clipboard.*/
+REGION_ALIAS("SECTION_FOR_BOOTCLIPBOARD", bootclpbrd);
 
 /* Sections */
 SECTIONS
@@ -169,3 +176,12 @@ SECTIONS
 
   .ARM.attributes 0 : { *(.ARM.attributes) }
 }
+
+/* Code rules inclusion.*/
+INCLUDE rules_code.ld
+
+/* Data rules inclusion.*/
+INCLUDE rules_data.ld
+
+/* boot clipboard rules inclusion.*/
+INCLUDE rules_bootclipboard.ld

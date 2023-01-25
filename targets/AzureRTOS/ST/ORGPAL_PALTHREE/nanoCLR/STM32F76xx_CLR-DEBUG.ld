@@ -11,8 +11,13 @@ _Min_Stack_Size = 0x400 ; /* required amount of stack */
 /* Memories definition */
 MEMORY
 {
-  RAM    (xrw)    : ORIGIN = 0x20020000,   LENGTH = 368K
-  FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 2048K
+  RAM    (xrw)    : ORIGIN = 0x20020000,   LENGTH = 368k
+  bootclpbrd(xrw) : ORIGIN = 0x20000000,   LENGTH = 48
+
+  FLASH    (rx)    : ORIGIN = 0x08010000,   LENGTH = 2M - 64k -32k - 1280k
+  config   (rx)    : ORIGIN = 0x08008000,   LENGTH = 32k
+  deployment (rx)  : ORIGIN = 0x080C0000,   LENGTH = 1280k
+
 }
 
 /* Sections */
