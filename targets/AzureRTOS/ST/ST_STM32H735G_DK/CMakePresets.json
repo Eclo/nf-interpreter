@@ -15,7 +15,7 @@
             ],
             "hidden": false,
             "cacheVariables": {
-                "TARGET_BOARD": "ORGPAL_PALTHREE",
+                "TARGET_BOARD": "ST_STM32H735G_DK",
                 "TARGET_SERIES": "STM32H7xx",
                 "RTOS": "AzureRTOS",
                 "STM32_CUBE_PACKAGE_REQUIRED": "ON",
@@ -26,7 +26,8 @@
                 "NF_FEATURE_HAS_CONFIG_BLOCK": "ON",
                 "NF_FEATURE_HAS_USB_MSD": "OFF",
                 "NF_FEATURE_USE_SPIFFS": "OFF",
-                "HAL_WP_USE_USB_CDC": "ON",
+                "HAL_WP_USE_USB_CDC": "OFF",
+                "HAL_WP_USE_SERIAL": "ON",
                 "NF_BUILD_RTM": "OFF",
                 "API_System.Math": "ON",
                 "API_Hardware.Stm32": "OFF",
