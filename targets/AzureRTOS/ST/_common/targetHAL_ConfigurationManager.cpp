@@ -7,7 +7,7 @@
 #include <nanoHAL_v2.h>
 #include <nanoWeak.h>
 #include <Target_BlockStorage_STM32FlashDriver.h>
-#include <network_options.h>
+// #include <network_options.h>
 
 #if defined(WIFI_DRIVER_ISM43362) && defined(I_AM_NANOCLR)
 #include <wifi.h>
@@ -97,7 +97,7 @@ __nfweak void ConfigurationManager_EnumerateConfigurationBlocks()
                 (uint32_t)&__nanoConfig_start__,
                 (uint32_t)&__nanoConfig_end__);
 
-#if (TARGET_HAS_WIFI_SUPPORT == 1)
+#if defined(TARGET_HAS_WIFI_SUPPORT) && (TARGET_HAS_WIFI_SUPPORT == 1)
         if (networkWirelessConfigs->Count == 0)
         {
             // there is no network config block available, get a default
@@ -323,7 +323,7 @@ __nfweak bool ConfigurationManager_StoreConfigurationBlock(
     else if (configuration == DeviceConfigurationOption_Wireless80211Network)
     {
 
-#if (TARGET_HAS_WIFI_SUPPORT == 1)
+#if defined(TARGET_HAS_WIFI_SUPPORT) && (TARGET_HAS_WIFI_SUPPORT == 1)
 
         if (g_TargetConfiguration.Wireless80211Configs == NULL ||
             (g_TargetConfiguration.Wireless80211Configs->Count == 0 && configurationIndex == 0))
@@ -713,7 +713,7 @@ __nfweak bool InitialiseNetworkDefaultConfig(HAL_Configuration_NetworkInterface 
 {
     (void)configurationIndex;
 
-#if (TARGET_HAS_WIFI_SUPPORT == 1)
+#if defined(TARGET_HAS_WIFI_SUPPORT) && (TARGET_HAS_WIFI_SUPPORT == 1)
 
     memset(config, 0, sizeof(HAL_Configuration_NetworkInterface));
 
