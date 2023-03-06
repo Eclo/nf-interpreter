@@ -6,9 +6,13 @@
 #ifndef HAL_NF_ST_FLASH_H
 #define HAL_NF_ST_FLASH_H
 
-#include <stm32f7xx_hal.h>
+#ifdef STM32H7XX
+#include <stm32h7xx_hal.h>
+#include <v5/flash_lld.h>
+#endif
 
 #ifdef STM32F7XX
+#include <stm32f7xx_hal.h>
 #include <v2/flash_lld.h>
 #endif
 
