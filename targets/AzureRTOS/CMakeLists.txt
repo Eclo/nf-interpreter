@@ -30,7 +30,7 @@ elseif(HAL_WP_USE_USB_CDC)
     set(HAL_WP_USE_USB_CDC_OPTION TRUE CACHE INTERNAL "set HAL_WP_USE_USB_CDC")
     set(HAL_WP_USE_SERIAL_OPTION FALSE CACHE INTERNAL "set HAL_WP_USE_SERIAL")
 else()
-    message(FATAL_ERROR "\n\nERROR: need to choose a channel for Wire Protocol. One of the build options HAL_WP_USE_SERIAL_OPTION or HAL_WP_USE_USB_CDC_OPTION has to be 'ON'.")
+    message(FATAL_ERROR "\n\nERROR: need to choose a channel for Wire Protocol. One of the build options HAL_WP_USE_SERIAL or HAL_WP_USE_USB_CDC has to be 'ON'.")
 endif()
 
 if(HAL_WP_USE_USB_CDC)
