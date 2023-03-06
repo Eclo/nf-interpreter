@@ -119,6 +119,8 @@ foreach(SRC_FILE ${STM32H7_CubePackage_SRCS})
     
 endforeach()
 
+set_source_files_properties(${stm32h7_hal_driver_SOURCE_DIR}/Src/stm32h7xx_hal_flash.c PROPERTIES COMPILE_FLAGS -Wno-unused-parameter)
+
 list(REMOVE_DUPLICATES STM32H7_CubePackage_INCLUDE_DIRS)
 
 include(FindPackageHandleStandardArgs)
