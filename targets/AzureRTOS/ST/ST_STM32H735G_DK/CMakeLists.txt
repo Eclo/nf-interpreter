@@ -26,10 +26,10 @@ nf_setup_target_build(
     HAS_NANOBOOTER
 
     BOOTER_LINKER_FILE 
-        STM32H73xx_booter
+        STM32H735IGKX_booter
 
     CLR_LINKER_FILE 
-        STM32H73xx_CLR
+        STM32H735IGKX_CLR
 
     CLR_EXTRA_SOURCE_FILES
         # the next one is required is the target implements and it's using external memory
