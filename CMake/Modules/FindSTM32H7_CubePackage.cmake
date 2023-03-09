@@ -43,6 +43,7 @@ set(STM32H7_CubePackage_SRCS
     stm32h7xx_hal_sdram.c
     stm32h7xx_hal_wwdg.c
     stm32h7xx_hal_flash.c
+    stm32h7xx_hal_flash_ex.c
 
     stm32h7xx_hal_dma.c
     stm32h7xx_hal_qspi.c
