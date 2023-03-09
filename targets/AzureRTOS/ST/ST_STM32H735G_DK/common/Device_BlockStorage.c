@@ -11,17 +11,21 @@ const BlockRange BlockRange1[] = {
     // 08000000 nanoBooter
     {BlockRange_BLOCKTYPE_BOOTSTRAP, 0, 0},
 
+    // 08020000 nanoCLR
+    {BlockRange_BLOCKTYPE_CODE, 1, 2},
+
+    // 08080000 deployment
+    {BlockRange_BLOCKTYPE_DEPLOYMENT, 3, 6},
+
     ///////////////////////////////////////////////////////////////////////////////////////
     // because this target is using a configuration block need to add the
     // configuration manager files to the CMake and call ConfigurationManager_Initialize()
     // in nanoBooter so the configuration can be managed when in booter mode
     ///////////////////////////////////////////////////////////////////////////////////////
-    // 08020000 configuration block
-    {BlockRange_BLOCKTYPE_CONFIG, 1, 1},
+    // 080E0000 configuration block
+    {BlockRange_BLOCKTYPE_CONFIG, 7, 7},
     ///////////////////////////////////////////////////////////////////////////////////////
 
-    // 08040000 nanoCLR
-    {BlockRange_BLOCKTYPE_CODE, 2, 7},
 };
 
 const BlockRegionInfo BlockRegions[] = {
