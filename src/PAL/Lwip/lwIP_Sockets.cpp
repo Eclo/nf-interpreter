@@ -138,7 +138,7 @@ void LWIP_SOCKETS_Driver::Link_callback(struct netif *netif)
         if (!PostAvailabilityOffContinuation.IsLinked())
             PostAvailabilityOffContinuation.Enqueue();
     }
-    //Events_Set(SYSTEM_EVENT_FLAG_SOCKET);
+    // Events_Set(SYSTEM_EVENT_FLAG_SOCKET);
     Events_Set(SYSTEM_EVENT_FLAG_NETWORK);
 }
 #endif
@@ -192,7 +192,7 @@ void LWIP_SOCKETS_Driver::Status_callback(struct netif *netif)
     }
 #endif
 #endif
-    //Events_Set(SYSTEM_EVENT_FLAG_SOCKET);
+    // Events_Set(SYSTEM_EVENT_FLAG_SOCKET);
     Events_Set(SYSTEM_EVENT_FLAG_NETWORK);
 }
 #endif
@@ -225,7 +225,7 @@ void LWIP_SOCKETS_Driver::ExtendedStatus_callback(
     }
 #endif
 
-    //Events_Set(SYSTEM_EVENT_FLAG_SOCKET);
+    // Events_Set(SYSTEM_EVENT_FLAG_SOCKET);
     Events_Set(SYSTEM_EVENT_FLAG_NETWORK);
 }
 #endif
