@@ -24,7 +24,7 @@ HRESULT CLR_RT_HeapBlock_WaitForObject::CreateInstance( CLR_RT_Thread* caller, c
         
     _ASSERTE( sizeof(CLR_RT_HeapBlock_WaitForObject) % 4 == 0 );
 
-    CLR_UINT32 totLength = (CLR_UINT32)(sizeof(CLR_RT_HeapBlock_WaitForObject) + cObjects * sizeof(CLR_RT_HeapBlock));
+    CLR_UINT32 totLength = (CLR_UINT32)(sizeof(CLR_RT_HeapBlock_WaitForObject) + cObjects * sizeof(struct CLR_RT_HeapBlock));
 
     CLR_RT_HeapBlock_WaitForObject* wait = EVENTCACHE_EXTRACT_NODE_AS_BYTES(g_CLR_RT_EventCache,CLR_RT_HeapBlock_WaitForObject,DATATYPE_WAIT_FOR_OBJECT_HEAD,0,totLength); CHECK_ALLOCATION(wait);
     
@@ -32,7 +32,7 @@ HRESULT CLR_RT_HeapBlock_WaitForObject::CreateInstance( CLR_RT_Thread* caller, c
     wait->m_cObjects   = cObjects;
     wait->m_fWaitAll   = fWaitAll;
 
-    memcpy( wait->GetWaitForObjects(), objects, sizeof(CLR_RT_HeapBlock) * cObjects );
+    memcpy( wait->GetWaitForObjects(), objects, sizeof(struct CLR_RT_HeapBlock) * cObjects );
 
     caller->m_waitForObject        = wait;
     caller->m_status               = CLR_RT_Thread::TH_S_Waiting;
