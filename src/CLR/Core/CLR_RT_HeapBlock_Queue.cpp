@@ -154,7 +154,7 @@ HRESULT CLR_RT_HeapBlock_Queue::CopyTo(CLR_RT_HeapBlock_Array *toArray, CLR_INT3
 
     // if the target array is of type Object, we don't need to call the complex Array::Copy() since there will be no
     // casting involved
-    HRESULT (*arrayCopy)
+    HRESULT(*arrayCopy)
     (CLR_RT_HeapBlock_Array *, int, CLR_RT_HeapBlock_Array *, int, int) =
         (toArray->m_typeOfElement == DATATYPE_OBJECT) ? ObjArrayMemcpy : CLR_RT_HeapBlock_Array::Copy;
 
