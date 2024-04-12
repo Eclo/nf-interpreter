@@ -5,7 +5,7 @@
 
 #include "nf_sys_io_filesystem.h"
 
-HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::_ctor___VOID__STRING__I4( CLR_RT_StackFrame &stack )
+HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::_ctor___VOID__STRING__I4(CLR_RT_StackFrame &stack)
 {
     NANOCLR_HEADER();
 
@@ -14,7 +14,8 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::_ctor___VOID__S
     NANOCLR_NOCLEANUP();
 }
 
-HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::Read___I4__SZARRAY_U1__I4__I4__I4( CLR_RT_StackFrame &stack )
+HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::Read___I4__SZARRAY_U1__I4__I4__I4(
+    CLR_RT_StackFrame &stack)
 {
     NANOCLR_HEADER();
 
@@ -23,7 +24,8 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::Read___I4__SZAR
     NANOCLR_NOCLEANUP();
 }
 
-HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::Write___I4__SZARRAY_U1__I4__I4__I4( CLR_RT_StackFrame &stack )
+HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::Write___I4__SZARRAY_U1__I4__I4__I4(
+    CLR_RT_StackFrame &stack)
 {
     NANOCLR_HEADER();
 
@@ -32,7 +34,7 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::Write___I4__SZA
     NANOCLR_NOCLEANUP();
 }
 
-HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::Seek___I8__I8__U4( CLR_RT_StackFrame &stack )
+HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::Seek___I8__I8__U4(CLR_RT_StackFrame &stack)
 {
     NANOCLR_HEADER();
 
@@ -41,7 +43,7 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::Seek___I8__I8__
     NANOCLR_NOCLEANUP();
 }
 
-HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::Flush___VOID( CLR_RT_StackFrame &stack )
+HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::Flush___VOID(CLR_RT_StackFrame &stack)
 {
     NANOCLR_HEADER();
 
@@ -50,7 +52,7 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::Flush___VOID( C
     NANOCLR_NOCLEANUP();
 }
 
-HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::GetLength___I8( CLR_RT_StackFrame &stack )
+HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::GetLength___I8(CLR_RT_StackFrame &stack)
 {
     NANOCLR_HEADER();
 
@@ -59,7 +61,7 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::GetLength___I8(
     NANOCLR_NOCLEANUP();
 }
 
-HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::SetLength___VOID__I8( CLR_RT_StackFrame &stack )
+HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::SetLength___VOID__I8(CLR_RT_StackFrame &stack)
 {
     NANOCLR_HEADER();
 
@@ -68,7 +70,8 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::SetLength___VOI
     NANOCLR_NOCLEANUP();
 }
 
-HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::GetStreamProperties___VOID__BYREF_BOOLEAN__BYREF_BOOLEAN__BYREF_BOOLEAN( CLR_RT_StackFrame &stack )
+HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::
+    GetStreamProperties___VOID__BYREF_BOOLEAN__BYREF_BOOLEAN__BYREF_BOOLEAN(CLR_RT_StackFrame &stack)
 {
     NANOCLR_HEADER();
 
@@ -77,7 +80,7 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::GetStreamProper
     NANOCLR_NOCLEANUP();
 }
 
-HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::Close___VOID( CLR_RT_StackFrame &stack )
+HRESULT Library_nf_sys_io_filesystem_System_IO_NativeFileStream::Close___VOID(CLR_RT_StackFrame &stack)
 {
     NANOCLR_HEADER();
 

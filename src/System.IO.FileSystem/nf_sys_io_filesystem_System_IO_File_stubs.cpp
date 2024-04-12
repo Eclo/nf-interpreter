@@ -5,7 +5,7 @@
 
 #include "nf_sys_io_filesystem.h"
 
-HRESULT Library_nf_sys_io_filesystem_System_IO_File::DeleteNative___STATIC__VOID__STRING( CLR_RT_StackFrame &stack )
+HRESULT Library_nf_sys_io_filesystem_System_IO_File::DeleteNative___STATIC__VOID__STRING(CLR_RT_StackFrame &stack)
 {
     NANOCLR_HEADER();
 
@@ -14,7 +14,8 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_File::DeleteNative___STATIC__VOID
     NANOCLR_NOCLEANUP();
 }
 
-HRESULT Library_nf_sys_io_filesystem_System_IO_File::ExistsNative___STATIC__BOOLEAN__STRING__STRING( CLR_RT_StackFrame &stack )
+HRESULT Library_nf_sys_io_filesystem_System_IO_File::ExistsNative___STATIC__BOOLEAN__STRING__STRING(
+    CLR_RT_StackFrame &stack)
 {
     NANOCLR_HEADER();
 
@@ -23,7 +24,7 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_File::ExistsNative___STATIC__BOOL
     NANOCLR_NOCLEANUP();
 }
 
-HRESULT Library_nf_sys_io_filesystem_System_IO_File::GetAttributesNative___STATIC__U1__STRING( CLR_RT_StackFrame &stack )
+HRESULT Library_nf_sys_io_filesystem_System_IO_File::GetAttributesNative___STATIC__U1__STRING(CLR_RT_StackFrame &stack)
 {
     NANOCLR_HEADER();
 
@@ -32,7 +33,8 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_File::GetAttributesNative___STATI
     NANOCLR_NOCLEANUP();
 }
 
-HRESULT Library_nf_sys_io_filesystem_System_IO_File::GetLastWriteTimeNative___STATIC__SystemDateTime__STRING( CLR_RT_StackFrame &stack )
+HRESULT Library_nf_sys_io_filesystem_System_IO_File::GetLastWriteTimeNative___STATIC__SystemDateTime__STRING(
+    CLR_RT_StackFrame &stack)
 {
     NANOCLR_HEADER();
 
@@ -41,7 +43,7 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_File::GetLastWriteTimeNative___ST
     NANOCLR_NOCLEANUP();
 }
 
-HRESULT Library_nf_sys_io_filesystem_System_IO_File::MoveNative___STATIC__VOID__STRING__STRING( CLR_RT_StackFrame &stack )
+HRESULT Library_nf_sys_io_filesystem_System_IO_File::MoveNative___STATIC__VOID__STRING__STRING(CLR_RT_StackFrame &stack)
 {
     NANOCLR_HEADER();
 
@@ -50,7 +52,8 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_File::MoveNative___STATIC__VOID__
     NANOCLR_NOCLEANUP();
 }
 
-HRESULT Library_nf_sys_io_filesystem_System_IO_File::SetAttributesNative___STATIC__VOID__STRING__U1( CLR_RT_StackFrame &stack )
+HRESULT Library_nf_sys_io_filesystem_System_IO_File::SetAttributesNative___STATIC__VOID__STRING__U1(
+    CLR_RT_StackFrame &stack)
 {
     NANOCLR_HEADER();
 

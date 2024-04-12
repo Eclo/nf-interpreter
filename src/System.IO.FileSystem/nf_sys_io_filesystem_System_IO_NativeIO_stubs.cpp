@@ -5,7 +5,8 @@
 
 #include "nf_sys_io_filesystem.h"
 
-HRESULT Library_nf_sys_io_filesystem_System_IO_NativeIO::Format___STATIC__VOID__STRING__STRING__STRING__U4( CLR_RT_StackFrame &stack )
+HRESULT Library_nf_sys_io_filesystem_System_IO_NativeIO::Format___STATIC__VOID__STRING__STRING__STRING__U4(
+    CLR_RT_StackFrame &stack)
 {
     NANOCLR_HEADER();
 
@@ -14,7 +15,7 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_NativeIO::Format___STATIC__VOID__
     NANOCLR_NOCLEANUP();
 }
 
-HRESULT Library_nf_sys_io_filesystem_System_IO_NativeIO::Delete___STATIC__VOID__STRING( CLR_RT_StackFrame &stack )
+HRESULT Library_nf_sys_io_filesystem_System_IO_NativeIO::Delete___STATIC__VOID__STRING(CLR_RT_StackFrame &stack)
 {
     NANOCLR_HEADER();
 
@@ -23,7 +24,8 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_NativeIO::Delete___STATIC__VOID__
     NANOCLR_NOCLEANUP();
 }
 
-HRESULT Library_nf_sys_io_filesystem_System_IO_NativeIO::Move___STATIC__BOOLEAN__STRING__STRING( CLR_RT_StackFrame &stack )
+HRESULT Library_nf_sys_io_filesystem_System_IO_NativeIO::Move___STATIC__BOOLEAN__STRING__STRING(
+    CLR_RT_StackFrame &stack)
 {
     NANOCLR_HEADER();
 
@@ -32,7 +34,8 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_NativeIO::Move___STATIC__BOOLEAN_
     NANOCLR_NOCLEANUP();
 }
 
-HRESULT Library_nf_sys_io_filesystem_System_IO_NativeIO::CreateDirectory___STATIC__VOID__STRING( CLR_RT_StackFrame &stack )
+HRESULT Library_nf_sys_io_filesystem_System_IO_NativeIO::CreateDirectory___STATIC__VOID__STRING(
+    CLR_RT_StackFrame &stack)
 {
     NANOCLR_HEADER();
 
@@ -41,7 +44,7 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_NativeIO::CreateDirectory___STATI
     NANOCLR_NOCLEANUP();
 }
 
-HRESULT Library_nf_sys_io_filesystem_System_IO_NativeIO::GetAttributes___STATIC__U4__STRING( CLR_RT_StackFrame &stack )
+HRESULT Library_nf_sys_io_filesystem_System_IO_NativeIO::GetAttributes___STATIC__U4__STRING(CLR_RT_StackFrame &stack)
 {
     NANOCLR_HEADER();
 
@@ -50,7 +53,8 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_NativeIO::GetAttributes___STATIC_
     NANOCLR_NOCLEANUP();
 }
 
-HRESULT Library_nf_sys_io_filesystem_System_IO_NativeIO::SetAttributes___STATIC__VOID__STRING__U4( CLR_RT_StackFrame &stack )
+HRESULT Library_nf_sys_io_filesystem_System_IO_NativeIO::SetAttributes___STATIC__VOID__STRING__U4(
+    CLR_RT_StackFrame &stack)
 {
     NANOCLR_HEADER();
 
