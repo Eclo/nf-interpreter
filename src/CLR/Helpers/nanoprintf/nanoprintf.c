@@ -10,6 +10,7 @@
 #include <stdarg.h>
 #include <math.h>
 #include "nanoprintf.h"
+#include "nanoprintf_cfg.h"
 #include <float.h>
 
 /* Define default macro to access the format string using a pointer. */
@@ -251,63 +252,48 @@ static char *format_float(double number, flt_width_t ndigits, flt_width_t width,
 #endif
         }
 #else
+        /* Normalise using a binary search, making the largest possible
+         * adjustment first and getting progressively smaller. This gets
+         * to the answer in the fastest time, with the minimum number of
+         * operations to introduce rounding errors.
+         */
+        // First make small numbers bigger.
         flt_width_t power10 = MAX_POWER;
         decpt = 1;
-
-        if(number == DBL_MAX)
+        i = 0;
+        while (number < 1.0)
         {
-            number = 1.7976931348623157;
-            decpt = 309;
+            while (number < smalltable[i + 1])
+            {
+                number /= smalltable[i];
+                decpt -= power10;
+            }
+            power10 >>= 1;
+            i++;
         }
-        else if(number == DBL_MIN)
+        // Then make big numbers smaller.
+        power10 = MAX_POWER;
+        i = 0;
+        while (number >= 10.0)
         {
-            number = -1.7976931348623157;
-			decpt = -309;
-		}
-        else
-        {
-            /* Normalise using a binary search, making the largest possible
-             * adjustment first and getting progressively smaller. This gets
-             * to the answer in the fastest time, with the minimum number of
-             * operations to introduce rounding errors.
-             */
-            // First make small numbers bigger.
-
-            i = 0;
-            while (number < 1.0)
+            while (number >= largetable[i])
             {
-                while (number < smalltable[i + 1])
-                {
-                    number /= smalltable[i];
-                    decpt -= power10;
-                }
-                power10 >>= 1;
-                i++;
-            }
-            // Then make big numbers smaller.
-            power10 = MAX_POWER;
-            i = 0;
-            while (number >= 10.0)
-            {
-                while (number >= largetable[i])
-                {
-                    number /= largetable[i];
-                    decpt += power10;
+                number /= largetable[i];
+                decpt += power10;
 #ifdef NO_ISNAN_ISINF
-                    // Avoid this loop hanging on infinity.
-                    if (decpt > DP_LIMIT)
-                    {
-                        buf[0] = 'I';
-                        buf[1] = 'n';
-                        buf[2] = 'f';
-                        buf[3] = '\0';
-                        return buf;
-                    }
-#endif
+                // Avoid this loop hanging on infinity.
+                if (decpt > DP_LIMIT)
+                {
+                    buf[0] = 'I';
+                    buf[1] = 'n';
+                    buf[2] = 'f';
+                    buf[3] = '\0';
+                    return buf;
                 }
-                power10 >>= 1;
-                i++;
+#endif
             }
+            power10 >>= 1;
+            i++;
         }
 #endif
     }
@@ -603,14 +589,6 @@ static width_t p_len(char *p)
     }
     return len;
 }
-#endif
-
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-// -Wimplicit-fallthrough option was added in GCC 7
-#if (__GNUC__ >= 7)
-#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
-#endif
 #endif
 
 /* ---------------------------------------------------------------------------
@@ -1117,10 +1095,6 @@ static printf_t doprnt(void *context, void (*func)(char c, void *context), size_
 #endif
 }
 
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
-
 /* ---------------------------------------------------------------------------
 Function: putout()
 This is the output function used for printf.
@@ -1145,7 +1119,7 @@ Replacement for library printf - writes to output (normally serial)
 It uses the output function putout() to update the serial output.
 If PRINTF_T is defined then the number of characters generated is returned.
 --------------------------------------------------------------------------- */
-printf_t printf_(const char *fmt, ...)
+printf_t _prntf(const char *fmt, ...)
 {
     va_list ap;
 #ifdef PRINTF_T
@@ -1157,7 +1131,7 @@ printf_t printf_(const char *fmt, ...)
   #ifdef BASIC_PRINTF_ONLY
     Count = doprnt(putout, fmt, ap);
   #else
-    Count = doprnt((void *)0, putout, BUFMAX, fmt, ap);
+    Count = doprnt((void *)0, putbuf, BUFMAX, fmt, ap);
   #endif
 #else
   #ifdef BASIC_PRINTF_ONLY
@@ -1194,7 +1168,7 @@ Normally it uses the output function putout() to update the buffer.
 sprintf is not supported when using BASIC_PRINTF
 If PRINTF_T is defined then the number of characters generated is returned.
 --------------------------------------------------------------------------- */
-printf_t sprintf_(char *buf, const char *fmt, ... )
+printf_t sprintf_(char *buffer, const char *fmt, ... )
 {
     va_list ap;
 #ifdef PRINTF_T
@@ -1203,13 +1177,21 @@ printf_t sprintf_(char *buf, const char *fmt, ... )
 
     va_start(ap, fmt);
 #ifdef PRINTF_T
-    Count = doprnt(&buf, putbuf, BUFMAX, fmt, ap);
+  #ifdef BASIC_PRINTF_ONLY
+    Count = doprnt(putout, fmt, ap);
+  #else
+    Count = doprnt(&buffer, putbuf, BUFMAX, fmt, ap);
+  #endif
 #else
-    doprnt(&buf, putbuf, fmt, ap);
+  #ifdef BASIC_PRINTF_ONLY
+    doprnt(putout, fmt, ap);
+  #else
+    doprnt(&buffer, putout, fmt, ap);
+  #endif
 #endif
     va_end(ap);
     // Append null terminator.
-    *buf = '\0';
+    *buffer = '\0';
     
 #ifdef PRINTF_T
     return Count;
@@ -1218,16 +1200,28 @@ printf_t sprintf_(char *buf, const char *fmt, ... )
 #endif
 
 // [NF_CHANGE]
-printf_t snprintf_(char *buf, size_t n,const char *fmt, ... )
+printf_t snprintf_(char *buffer, size_t n, const char *fmt, ... )
 {
     va_list ap;
     int Count;
 
     va_start(ap, fmt);
-    Count = doprnt(&buf, putbuf, n, fmt, ap);
+#ifdef PRINTF_T
+  #ifdef BASIC_PRINTF_ONLY
+    Count = doprnt(putout, fmt, ap);
+  #else
+    Count = doprnt(&buffer, putbuf, n, fmt, ap);
+  #endif
+#else
+  #ifdef BASIC_PRINTF_ONLY
+    doprnt(putout, fmt, ap);
+  #else
+    doprnt(&buffer, putout, fmt, ap);
+  #endif
+#endif
     va_end(ap);
     // Append null terminator.
-    *buf = '\0';
+    *buffer = '\0';
     
    return Count;
 }
