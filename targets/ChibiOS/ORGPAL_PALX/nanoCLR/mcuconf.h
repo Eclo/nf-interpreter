@@ -27,7 +27,7 @@
 /*
  * Memory attributes settings.
  */
-#define STM32_NOCACHE_ENABLE                FALSE
+#define STM32_NOCACHE_ENABLE FALSE
 
 /*
  * HAL driver system settings.
