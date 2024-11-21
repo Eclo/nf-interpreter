@@ -14,8 +14,10 @@
 #endif
 
 #define HAL_DMA_MODULE_ENABLED
+#define HAL_SDRAM_MODULE_ENABLED
 #define HAL_QSPI_MODULE_ENABLED
 #define HAL_RCC_MODULE_ENABLED
+#define HAL_CORTEX_MODULE_ENABLED
 
 #define  USE_HAL_DMA2D_REGISTER_CALLBACKS       0U /* DMA2D register callback disabled     */
 #define  USE_HAL_QSPI_REGISTER_CALLBACKS        0U /* QSPI register callback disabled      */
