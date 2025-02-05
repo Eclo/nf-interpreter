@@ -1702,7 +1702,8 @@ CLR_INT32 CLR_RT_HeapBlock::Compare_Values(const CLR_RT_HeapBlock &left, const C
                 {
                     return 0;
                 }
-                else if (__isnand((double)left.NumericByRefConst().r8) || __isnand((double)right.NumericByRefConst().r8))
+                else if (
+                    __isnand((double)left.NumericByRefConst().r8) || __isnand((double)right.NumericByRefConst().r8))
                 {
                     return 1;
                 }
