@@ -1335,8 +1335,8 @@ bool CLR_RT_FieldDef_Instance::ResolveToken(
 
                             // now bind against effectiveTS
                             genericType = effectiveTS;
-                            //CLR_RT_Assembly *tsAsm = g_CLR_RT_TypeSystem.m_assemblies[effectiveTS->Assembly() - 1];
-                            //const CLR_RECORD_TYPESPEC *tsRec = tsAsm->GetTypeSpec(effectiveTS->TypeSpec());
+                            // CLR_RT_Assembly *tsAsm = g_CLR_RT_TypeSystem.m_assemblies[effectiveTS->Assembly() - 1];
+                            // const CLR_RECORD_TYPESPEC *tsRec = tsAsm->GetTypeSpec(effectiveTS->TypeSpec());
 
                             //// if (!tsAsm->FindFieldDef(tsRec, tsAsm->GetString(fr->name), tsAsm, fr->signature,
                             //// resolved))
@@ -6748,7 +6748,6 @@ HRESULT CLR_RT_TypeSystem::BuildMethodName(
 
         NANOCLR_CHECK_HRESULT(BuildTypeName(*genericType, szBuffer, iBuffer, 0));
     }
-
 
     CLR_SafeSprintf(szBuffer, iBuffer, "::%s", inst.assembly->GetString(inst.target->name));
 
