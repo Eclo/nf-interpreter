@@ -173,5 +173,14 @@
     <ClCompile Include="corlib_native_System_Threading_SpinWait.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="corlib_native_System_Span_1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="corlib_native_System_ReadOnlySpan_1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="corlib_native_System_Runtime_CompilerServices_Unsafe.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

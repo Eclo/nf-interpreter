@@ -8,6 +8,7 @@
 
 // must be big enough to fit the biggest number
 // decorated with negative signs, group separators, etc.
+// matching declaration in Library_corlib_native_String.cpp
 #define FORMAT_RESULT_BUFFER_SIZE 128
 #define FORMAT_FMTSTR_BUFFER_SIZE 10
 
@@ -16,7 +17,7 @@ bool Library_corlib_native_System_Number::ParseFormat(char *format, char *format
     bool ret = true;
 
     // parse received format
-    if (format != NULL && format[0] != 0)
+    if (format != nullptr && format[0] != 0)
     {
         *formatChar = format[0];
         *precision = -1;
@@ -83,7 +84,7 @@ int Library_corlib_native_System_Number::DoPrintfOnDataType(char *buffer, char *
 {
     int ret = -1;
 
-    CLR_DataType dataType = value->DataType();
+    NanoCLRDataType dataType = value->DataType();
 
     switch (dataType)
     {
@@ -133,7 +134,7 @@ int Library_corlib_native_System_Number::DoPrintfOnDataType(char *buffer, char *
     return ret;
 }
 
-const char *Library_corlib_native_System_Number::GetPrintfLengthModifier(CLR_DataType dataType)
+const char *Library_corlib_native_System_Number::GetPrintfLengthModifier(NanoCLRDataType dataType)
 {
     const char *ret = (dataType == DATATYPE_I1 || dataType == DATATYPE_U1)   ? ""
                       : (dataType == DATATYPE_I2 || dataType == DATATYPE_U2) ? ""
@@ -143,21 +144,21 @@ const char *Library_corlib_native_System_Number::GetPrintfLengthModifier(CLR_Dat
     return ret;
 }
 
-bool Library_corlib_native_System_Number::IsSignedIntegerDataType(CLR_DataType dataType)
+bool Library_corlib_native_System_Number::IsSignedIntegerDataType(NanoCLRDataType dataType)
 {
     bool ret =
         (dataType == DATATYPE_I1 || dataType == DATATYPE_I2 || dataType == DATATYPE_I4 || dataType == DATATYPE_I8);
     return ret;
 }
 
-bool Library_corlib_native_System_Number::IsUnsignedIntegerDataType(CLR_DataType dataType)
+bool Library_corlib_native_System_Number::IsUnsignedIntegerDataType(NanoCLRDataType dataType)
 {
     bool ret =
         (dataType == DATATYPE_U1 || dataType == DATATYPE_U2 || dataType == DATATYPE_U4 || dataType == DATATYPE_U8);
     return ret;
 }
 
-bool Library_corlib_native_System_Number::IsIntegerDataType(CLR_DataType dataType)
+bool Library_corlib_native_System_Number::IsIntegerDataType(NanoCLRDataType dataType)
 {
     bool ret = IsSignedIntegerDataType(dataType) || IsUnsignedIntegerDataType(dataType);
     return ret;
@@ -328,7 +329,7 @@ int Library_corlib_native_System_Number::Format_G(
 {
     int ret = -1;
 
-    CLR_DataType dataType = value->DataType();
+    NanoCLRDataType dataType = value->DataType();
 
     bool isIntegerDataType = IsIntegerDataType(dataType);
 
@@ -590,7 +591,7 @@ int Library_corlib_native_System_Number::Format_D(
 {
     int ret = -1;
 
-    CLR_DataType dataType = value->DataType();
+    NanoCLRDataType dataType = value->DataType();
 
     if (precision == -1)
     {
@@ -631,7 +632,7 @@ int Library_corlib_native_System_Number::Format_X(char *buffer, CLR_RT_HeapBlock
 {
     int ret = -1;
 
-    CLR_DataType dataType = value->DataType();
+    NanoCLRDataType dataType = value->DataType();
 
     // set max width for the conversion
     int maxWidth = 0;
@@ -701,7 +702,7 @@ int Library_corlib_native_System_Number::Format_F(
                        // NF at the moment
     }
 
-    CLR_DataType dataType = value->DataType();
+    NanoCLRDataType dataType = value->DataType();
 
     bool isIntegerDataType = IsIntegerDataType(dataType);
 
@@ -718,10 +719,11 @@ int Library_corlib_native_System_Number::Format_F(
 
     ret = DoPrintfOnDataType(buffer, formatStr, value);
 
+    bool isNegative = (buffer[0] == '-');
+
     // this extra processing is only required for integer types
     if (isIntegerDataType && ret > 0)
     {
-        bool isNegative = (buffer[0] == '-');
         int offsetBecauseOfNegativeSign = (isNegative ? 1 : 0);
 
         int dotIndex = GetDotIndex(buffer, ret);
@@ -755,6 +757,13 @@ int Library_corlib_native_System_Number::Format_F(
 
         ret = ReplaceNegativeSign(buffer, ret, negativeSign);
         ret = ReplaceDecimalSeparator(buffer, ret, decimalSeparator);
+    }
+    else if (isNegative && ret == 2 && buffer[1] == '0')
+    {
+        // handle negative zero: if the value was negative but rounds to 0, remove the minus sign
+        // remove the negative sign
+        memmove(buffer, &buffer[1], ret);
+        ret--;
     }
 
     return ret;
@@ -815,7 +824,7 @@ int Library_corlib_native_System_Number::Format_E(char *buffer, CLR_RT_HeapBlock
     // force extra precision to account for rounding errors
     precision = requestedPrecision + 1;
 
-    CLR_DataType dataType = value->DataType();
+    NanoCLRDataType dataType = value->DataType();
 
     char formatStr[FORMAT_FMTSTR_BUFFER_SIZE];
     double copyValue = 0.0;
@@ -935,11 +944,11 @@ int Library_corlib_native_System_Number::Format_E(char *buffer, CLR_RT_HeapBlock
         // now the exponent
         if (formatChar == 'e')
         {
-            snprintf(&buffer[ret], FORMAT_RESULT_BUFFER_SIZE, "e%+.3d", exponent);
+            ret += snprintf(&buffer[ret], FORMAT_RESULT_BUFFER_SIZE - ret, "e%+.3d", exponent);
         }
         else
         {
-            snprintf(&buffer[ret], FORMAT_RESULT_BUFFER_SIZE, "E%+.3d", exponent);
+            ret += snprintf(&buffer[ret], FORMAT_RESULT_BUFFER_SIZE - ret, "E%+.3d", exponent);
         }
     }
 

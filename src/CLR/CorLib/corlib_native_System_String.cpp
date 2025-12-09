@@ -10,6 +10,9 @@ static const CLR_UINT16 c_WhiteSpaces[] = {
     0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200A, 0x200B, 0x3000, 0xFEFF,
 };
 
+// matching declaration in Library_corlib_native_System_Number.cpp
+#define FORMAT_RESULT_BUFFER_SIZE 128
+
 //--//
 
 HRESULT Library_corlib_native_System_String::CompareTo___I4__OBJECT(CLR_RT_StackFrame &stack)
@@ -140,6 +143,15 @@ HRESULT Library_corlib_native_System_String::Substring___STRING__I4__I4(CLR_RT_S
     NANOCLR_NOCLEANUP();
 }
 
+HRESULT Library_corlib_native_System_String::Trim___STRING(CLR_RT_StackFrame &stack)
+{
+    NANOCLR_HEADER();
+
+    NANOCLR_SET_AND_LEAVE(Trim(stack, nullptr, true, true));
+
+    NANOCLR_NOCLEANUP();
+}
+
 HRESULT Library_corlib_native_System_String::Trim___STRING__SZARRAY_CHAR(CLR_RT_StackFrame &stack)
 {
     NATIVE_PROFILE_CLR_CORE();
@@ -150,6 +162,19 @@ HRESULT Library_corlib_native_System_String::Trim___STRING__SZARRAY_CHAR(CLR_RT_
     NANOCLR_NOCLEANUP();
 }
 
+#if (NANOCLR_REFLECTION == TRUE)
+
+HRESULT Library_corlib_native_System_String::TrimStart___STRING(CLR_RT_StackFrame &stack)
+{
+    NANOCLR_HEADER();
+
+    NANOCLR_SET_AND_LEAVE(Trim(stack, nullptr, true, false));
+
+    NANOCLR_NOCLEANUP();
+}
+
+#endif
+
 HRESULT Library_corlib_native_System_String::TrimStart___STRING__SZARRAY_CHAR(CLR_RT_StackFrame &stack)
 {
     NATIVE_PROFILE_CLR_CORE();
@@ -159,6 +184,19 @@ HRESULT Library_corlib_native_System_String::TrimStart___STRING__SZARRAY_CHAR(CL
 
     NANOCLR_NOCLEANUP();
 }
+
+#if (NANOCLR_REFLECTION == TRUE)
+
+HRESULT Library_corlib_native_System_String::TrimEnd___STRING(CLR_RT_StackFrame &stack)
+{
+    NANOCLR_HEADER();
+
+    NANOCLR_SET_AND_LEAVE(Trim(stack, nullptr, false, true));
+
+    NANOCLR_NOCLEANUP();
+}
+
+#endif
 
 HRESULT Library_corlib_native_System_String::TrimEnd___STRING__SZARRAY_CHAR(CLR_RT_StackFrame &stack)
 {
@@ -206,10 +244,10 @@ HRESULT Library_corlib_native_System_String::_ctor___VOID__CHAR__I4(CLR_RT_Stack
     {
         CLR_RT_HeapBlock tmp;
 
-        tmp.SetObjectReference(NULL);
+        tmp.SetObjectReference(nullptr);
         CLR_RT_ProtectFromGC gc(tmp);
 
-        NANOCLR_CHECK_HRESULT(CLR_RT_HeapBlock_Array::CreateInstance(tmp, len, g_CLR_RT_WellKnownTypes.m_Char));
+        NANOCLR_CHECK_HRESULT(CLR_RT_HeapBlock_Array::CreateInstance(tmp, len, g_CLR_RT_WellKnownTypes.Char));
 
         {
             CLR_RT_HeapBlock_Array *tmpArray = tmp.DereferenceArray();
@@ -233,8 +271,10 @@ HRESULT Library_corlib_native_System_String::CompareTo___I4__STRING(CLR_RT_Stack
     NATIVE_PROFILE_CLR_CORE();
     NANOCLR_HEADER();
 
-    CLR_RT_HeapBlock &pThis = stack.Arg0(); // String references are special, they don't point to an object, they are
-                                            // the object. So use stack.Arg0() instead of stack.This()
+    // String references are special, they don't point to an object, they are
+    // the object. So use stack.Arg0() instead of stack.This()
+    CLR_RT_HeapBlock &pThis = stack.Arg0();
+
     CLR_RT_HeapBlock &pArg = stack.Arg1();
 
     stack.SetResult_I4(CLR_RT_HeapBlock::Compare_Unsigned_Values(pThis, pArg));
@@ -445,16 +485,6 @@ HRESULT Library_corlib_native_System_String::ToUpper___STRING(CLR_RT_StackFrame 
     NANOCLR_NOCLEANUP();
 }
 
-HRESULT Library_corlib_native_System_String::Trim___STRING(CLR_RT_StackFrame &stack)
-{
-    NATIVE_PROFILE_CLR_CORE();
-    NANOCLR_HEADER();
-
-    NANOCLR_SET_AND_LEAVE(Trim(stack, NULL, true, true));
-
-    NANOCLR_NOCLEANUP();
-}
-
 HRESULT Library_corlib_native_System_String::Equals___STATIC__BOOLEAN__STRING__STRING(CLR_RT_StackFrame &stack)
 {
     NATIVE_PROFILE_CLR_CORE();
@@ -585,6 +615,59 @@ HRESULT Library_corlib_native_System_String::ToCharArray(CLR_RT_StackFrame &stac
     NANOCLR_NOCLEANUP();
 }
 
+// Helper function for comparing UTF-8 substrings
+bool MatchString(CLR_RT_UnicodeHelper &inputIter, const char *searchStr, int searchCharLen)
+{
+    // Create copies to preserve original iterator state
+    CLR_RT_UnicodeHelper inputCopy = inputIter;
+    CLR_RT_UnicodeHelper searchIter{};
+    searchIter.SetInputUTF8(searchStr);
+
+    for (int i = 0; i < searchCharLen; i++)
+    {
+        CLR_UINT16 bufInput[3] = {0};
+        CLR_UINT16 bufSearch[3] = {0};
+
+        // Set up buffers for character conversion
+        inputCopy.m_outputUTF16 = bufInput;
+        inputCopy.m_outputUTF16_size = MAXSTRLEN(bufInput);
+        searchIter.m_outputUTF16 = bufSearch;
+        searchIter.m_outputUTF16_size = MAXSTRLEN(bufSearch);
+
+        // Convert next character from input
+        if (!inputCopy.ConvertFromUTF8(1, false))
+        {
+            // Input ended prematurely
+            return false;
+        }
+
+        // Convert next character from search string
+        if (!searchIter.ConvertFromUTF8(1, false))
+        {
+            // Shouldn't happen for valid search string
+            return false;
+        }
+
+        // Compare first UTF-16 code unit
+        if (bufInput[0] != bufSearch[0])
+        {
+            return false;
+        }
+
+        // Handle surrogate pairs (4-byte UTF-8 sequences)
+        if (bufInput[0] >= 0xD800 && bufInput[0] <= 0xDBFF)
+        {
+            // High surrogate
+            if (bufInput[1] != bufSearch[1])
+            {
+                // Low surrogate mismatch
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 HRESULT Library_corlib_native_System_String::IndexOf(CLR_RT_StackFrame &stack, int mode)
 {
     NATIVE_PROFILE_CLR_CORE();
@@ -594,10 +677,10 @@ HRESULT Library_corlib_native_System_String::IndexOf(CLR_RT_StackFrame &stack, i
     int startIndex;
     int count;
     int pos;
-    const char *pString;
-    const CLR_UINT16 *pChars;
+    const char *pString = nullptr;
+    const CLR_UINT16 *pChars = nullptr;
     int iChars = 0;
-    CLR_RT_UnicodeHelper inputIterator;
+    CLR_RT_UnicodeHelper inputIterator{};
     int inputLen;
     int searchLen = 1;
 
@@ -605,8 +688,6 @@ HRESULT Library_corlib_native_System_String::IndexOf(CLR_RT_StackFrame &stack, i
     if (!szText)
         szText = "";
     pos = -1;
-    pString = NULL;
-    pChars = NULL;
 
     if (mode & c_IndexOf__SingleChar)
     {
@@ -617,7 +698,6 @@ HRESULT Library_corlib_native_System_String::IndexOf(CLR_RT_StackFrame &stack, i
     {
         CLR_RT_HeapBlock_Array *array = stack.Arg1().DereferenceArray();
         FAULT_ON_NULL(array);
-
         pChars = (const CLR_UINT16 *)array->GetFirstElement();
         iChars = array->m_numOfElements;
     }
@@ -625,15 +705,13 @@ HRESULT Library_corlib_native_System_String::IndexOf(CLR_RT_StackFrame &stack, i
     {
         pString = stack.Arg1().RecoverString();
         FAULT_ON_NULL(pString);
-        // how long is the search string?
         inputIterator.SetInputUTF8(pString);
         searchLen = inputIterator.CountNumberOfCharacters();
     }
 
-    // calculate input string length
+    // Calculate input length
     inputIterator.SetInputUTF8(szText);
     inputLen = inputIterator.CountNumberOfCharacters();
-
     if (0 == inputLen)
     {
         pos = -1;
@@ -647,7 +725,6 @@ HRESULT Library_corlib_native_System_String::IndexOf(CLR_RT_StackFrame &stack, i
     }
     else
     {
-        // for mode LastIndex... we are searching backwards toward the start of the string
         if (mode & c_IndexOf__Last)
         {
             startIndex = inputLen - 1;
@@ -663,18 +740,21 @@ HRESULT Library_corlib_native_System_String::IndexOf(CLR_RT_StackFrame &stack, i
         NANOCLR_SET_AND_LEAVE(CLR_E_OUT_OF_RANGE);
 
     // for mode LastIndex... with string we move the start index back by the search string length -1
+    // if we search forward
     if ((mode & c_IndexOf__String_Last) == c_IndexOf__String_Last)
     {
         startIndex -= searchLen - 1;
-        // check the start index; if not in range skip the search
+        // check the start index; if not in range, skip the search
         if (startIndex < 0 || startIndex > inputLen)
+        {
             goto Exit;
+        }
     }
 
     // calculate the iteration count
     if (mode & c_IndexOf__Count)
     {
-        // count form parameter
+        // count (from parameter)
         count = stack.Arg3().NumericByRefConst().s4;
     }
     else
@@ -682,30 +762,31 @@ HRESULT Library_corlib_native_System_String::IndexOf(CLR_RT_StackFrame &stack, i
         // for mode LastIndex... we are searching from start index backwards toward the start of the string
         if (mode & c_IndexOf__Last)
         {
-            // backward until the start of string
-            // one more time than the startIndex because we should iterate until zero
+            // backwards until the start of the string
+            // one position ahead of the startIndex because we should iterate until position zero
             count = startIndex + 1;
         }
         else
         {
-            // forward until the end of string
+            // move forward until reaching the end of the string
             count = inputLen - startIndex;
         }
     }
 
-    // for mode with string we reduce the count by the search string length -1
-    // if we search foreward
+    // forward search with index of string mode: adjust the count by the search string length -1
     if ((mode & c_IndexOf__String_Last) == c_IndexOf__String)
     {
         count -= searchLen - 1;
     }
 
-    // check the count
+    // validate count
     if (mode & c_IndexOf__Last)
     {
         // check for backward mode; no exception; just exit
         if (count > startIndex + 1)
+        {
             goto Exit;
+        }
     }
     else
     {
@@ -717,66 +798,24 @@ HRESULT Library_corlib_native_System_String::IndexOf(CLR_RT_StackFrame &stack, i
     // First move to the character, then read it.
     if (inputIterator.ConvertFromUTF8(startIndex, true))
     {
-        // string mode?
+        // String search mode
         if (pString)
         {
-            // iterate thru all positions
             while (count-- > 0)
             {
-                CLR_RT_UnicodeHelper inputString;
-                inputString.SetInputUTF8((const char *)inputIterator.m_inputUTF8);
-                CLR_RT_UnicodeHelper searchString;
-                searchString.SetInputUTF8(pString);
-                bool finished = false;
-
-                while (true)
+                // Use helper for proper UTF-8 comparison
+                if (MatchString(inputIterator, pString, searchLen))
                 {
-                    CLR_UINT16 bufInput[3];
-                    CLR_UINT16 bufSearch[3];
-
-                    inputString.m_outputUTF16 = bufInput;
-                    inputString.m_outputUTF16_size = MAXSTRLEN(bufInput);
-
-                    searchString.m_outputUTF16 = bufSearch;
-                    searchString.m_outputUTF16_size = MAXSTRLEN(bufSearch);
-
-                    // read next char from search string; if no more chars to read (false)
-                    // then we are done and found the search string in the input string
-                    if (searchString.ConvertFromUTF8(1, false) == false)
-                    {
-                        pos = startIndex;
-                        finished = true;
-                        break;
-                    }
-
-                    // read the next char from the input string; if no more chars to read (false)
-                    // we didn't found the search string in the input string; we abort the search now
-                    if (inputString.ConvertFromUTF8(1, false) == false)
-                    {
-                        finished = true;
-                        break;
-                    }
-
-                    // does the char from input not match the char from the search string
-                    if (bufInput[0] != bufSearch[0])
-                    {
-                        // next iteration round but not finished
-                        break;
-                    }
-                }
-
-                // finished (with or without a found) then break
-                if (finished)
-                {
+                    pos = startIndex;
                     break;
                 }
 
-                // reading forward or backward
+                // Move to next candidate position (both forward or backward reading)
                 if (mode & c_IndexOf__Last)
                 {
                     startIndex--;
-                    // move one chars backward
-                    if (inputIterator.MoveBackwardInUTF8(szText, 1) == false)
+                    // move backwards one char
+                    if (!inputIterator.MoveBackwardInUTF8(szText, 1))
                     {
                         break;
                     }
@@ -784,8 +823,8 @@ HRESULT Library_corlib_native_System_String::IndexOf(CLR_RT_StackFrame &stack, i
                 else
                 {
                     startIndex++;
-                    // move to the next char
-                    if (inputIterator.ConvertFromUTF8(1, true) == false)
+                    // move forward to the next char
+                    if (!inputIterator.ConvertFromUTF8(1, true))
                     {
                         break;
                     }
@@ -793,56 +832,53 @@ HRESULT Library_corlib_native_System_String::IndexOf(CLR_RT_StackFrame &stack, i
             }
         }
 
-        // char mode?
-        if (pChars)
+        // Character search mode
+        else if (pChars)
         {
-            // iterate thru all positions
+            // iterate through all positions
             while (count-- > 0)
             {
-                CLR_UINT16 buf[3];
+                CLR_UINT16 buf[3] = {0};
 
                 inputIterator.m_outputUTF16 = buf;
                 inputIterator.m_outputUTF16_size = MAXSTRLEN(buf);
 
                 // read the next char from the input string; if no more chars to read (false)
-                // we didn't found the search chars in the input string
-                if (inputIterator.ConvertFromUTF8(1, false) == false)
+                // the search chars weren't found in the input string
+                if (!inputIterator.ConvertFromUTF8(1, false))
                 {
                     break;
                 }
 
-                // test each search char if it's a match
+                // test each search char for a match
                 for (int i = 0; i < iChars; i++)
                 {
-                    // match?
                     if (buf[0] == pChars[i])
                     {
-                        // position found!
+                        // found position for next char
                         pos = startIndex;
                         break;
                     }
                 }
 
-                // found? => break
+                // didn't find any, break
                 if (pos != -1)
                 {
                     break;
                 }
 
-                // for mode LastIndex... we are searching from start index backwards toward the start of the string
+                // for search mode LastIndex: we are searching from start index backwards toward the start of the string
                 if (mode & c_IndexOf__Last)
                 {
-                    // in backward mode
+                    // backwards mode
                     startIndex--;
-                    // move two chars backward, because the current char is already read
-                    if (inputIterator.MoveBackwardInUTF8(szText, 2) == false)
-                    {
+                    // have to move two chars backwards, because the current char is already read
+                    if (!inputIterator.MoveBackwardInUTF8(szText, 2))
                         break;
-                    }
                 }
                 else
                 {
-                    // forward mode; simple advance the start index
+                    // forward mode: just advance the start index
                     startIndex++;
                 }
             }
@@ -851,7 +887,6 @@ HRESULT Library_corlib_native_System_String::IndexOf(CLR_RT_StackFrame &stack, i
 
 Exit:
     stack.SetResult_I4(pos);
-
     NANOCLR_NOCLEANUP();
 }
 
@@ -864,7 +899,7 @@ HRESULT Library_corlib_native_System_String::ChangeCase(CLR_RT_StackFrame &stack
     CLR_RT_HeapBlock_Array *arrayTmp;
     CLR_RT_HeapBlock refTmp;
 
-    refTmp.SetObjectReference(NULL);
+    refTmp.SetObjectReference(nullptr);
     CLR_RT_ProtectFromGC gc(refTmp);
 
     NANOCLR_CHECK_HRESULT(ConvertToCharArray(stack, refTmp, arrayTmp, 0, -1));
@@ -889,10 +924,11 @@ HRESULT Library_corlib_native_System_String::ChangeCase(CLR_RT_StackFrame &stack
         *ptr++ = c;
     }
 
-    NANOCLR_CHECK_HRESULT(CLR_RT_HeapBlock_String::CreateInstance(
-        stack.PushValue(),
-        (CLR_UINT16 *)arrayTmp->GetFirstElement(),
-        arrayTmp->m_numOfElements));
+    NANOCLR_CHECK_HRESULT(
+        CLR_RT_HeapBlock_String::CreateInstance(
+            stack.PushValue(),
+            (CLR_UINT16 *)arrayTmp->GetFirstElement(),
+            arrayTmp->m_numOfElements));
 
     NANOCLR_NOCLEANUP();
 }
@@ -905,7 +941,7 @@ HRESULT Library_corlib_native_System_String::Substring(CLR_RT_StackFrame &stack,
     CLR_RT_HeapBlock_Array *arrayTmp;
     CLR_RT_HeapBlock refTmp;
 
-    refTmp.SetObjectReference(NULL);
+    refTmp.SetObjectReference(nullptr);
     CLR_RT_ProtectFromGC gc(refTmp);
 
     NANOCLR_CHECK_HRESULT(ConvertToCharArray(stack, refTmp, arrayTmp, 0, -1));
@@ -923,10 +959,11 @@ HRESULT Library_corlib_native_System_String::Substring(CLR_RT_StackFrame &stack,
             NANOCLR_SET_AND_LEAVE(CLR_E_OUT_OF_RANGE);
     }
 
-    NANOCLR_CHECK_HRESULT(CLR_RT_HeapBlock_String::CreateInstance(
-        stack.PushValue(),
-        (CLR_UINT16 *)arrayTmp->GetElement(startIndex),
-        length));
+    NANOCLR_CHECK_HRESULT(
+        CLR_RT_HeapBlock_String::CreateInstance(
+            stack.PushValue(),
+            (CLR_UINT16 *)arrayTmp->GetElement(startIndex),
+            length));
 
     NANOCLR_NOCLEANUP();
 }
@@ -946,7 +983,7 @@ HRESULT Library_corlib_native_System_String::Trim(
     CLR_RT_HeapBlock refTmp;
     CLR_RT_HeapBlock_Array *arrayTmp;
 
-    refTmp.SetObjectReference(NULL);
+    refTmp.SetObjectReference(nullptr);
     CLR_RT_ProtectFromGC gc(refTmp);
 
     NANOCLR_CHECK_HRESULT(ConvertToCharArray(stack, refTmp, arrayTmp, 0, -1));
@@ -1035,7 +1072,7 @@ HRESULT Library_corlib_native_System_String::Split(CLR_RT_StackFrame &stack, CLR
     {
         CLR_RT_HeapBlock &refTarget = stack.PushValue();
 
-        NANOCLR_CHECK_HRESULT(CLR_RT_HeapBlock_Array::CreateInstance(refTarget, 0, g_CLR_RT_WellKnownTypes.m_String));
+        NANOCLR_CHECK_HRESULT(CLR_RT_HeapBlock_Array::CreateInstance(refTarget, 0, g_CLR_RT_WellKnownTypes.String));
 
         arrayDst = refTarget.DereferenceArray();
     }
@@ -1043,7 +1080,7 @@ HRESULT Library_corlib_native_System_String::Split(CLR_RT_StackFrame &stack, CLR
     {
         arrayChars = chars.DereferenceArray();
 
-        if (arrayChars != NULL && arrayChars->m_numOfElements > 0)
+        if (arrayChars != nullptr && arrayChars->m_numOfElements > 0)
         {
             pChars = (CLR_UINT16 *)arrayChars->GetFirstElement();
             cChars = arrayChars->m_numOfElements;
@@ -1054,12 +1091,12 @@ HRESULT Library_corlib_native_System_String::Split(CLR_RT_StackFrame &stack, CLR
             cChars = ARRAYSIZE(c_WhiteSpaces);
         }
 
-        arrayDst = NULL;
+        arrayDst = nullptr;
 
         {
             CLR_RT_HeapBlock refSrc;
 
-            refSrc.SetObjectReference(NULL);
+            refSrc.SetObjectReference(nullptr);
             CLR_RT_ProtectFromGC gc(refSrc);
 
             NANOCLR_CHECK_HRESULT(ConvertToCharArray(stack, refSrc, arraySrc, 0, -1));
@@ -1102,10 +1139,11 @@ HRESULT Library_corlib_native_System_String::Split(CLR_RT_StackFrame &stack, CLR
                         {
                             CLR_RT_HeapBlock *str = (CLR_RT_HeapBlock *)arrayDst->GetElement(count);
 
-                            NANOCLR_CHECK_HRESULT(CLR_RT_HeapBlock_String::CreateInstance(
-                                *str,
-                                pSrcStart,
-                                (CLR_UINT32)(pSrc - pSrcStart)));
+                            NANOCLR_CHECK_HRESULT(
+                                CLR_RT_HeapBlock_String::CreateInstance(
+                                    *str,
+                                    pSrcStart,
+                                    (CLR_UINT32)(pSrc - pSrcStart)));
 
                             pSrcStart = pSrc + 1;
                         }
@@ -1120,7 +1158,7 @@ HRESULT Library_corlib_native_System_String::Split(CLR_RT_StackFrame &stack, CLR
                     CLR_RT_HeapBlock &refTarget = stack.PushValue();
 
                     NANOCLR_CHECK_HRESULT(
-                        CLR_RT_HeapBlock_Array::CreateInstance(refTarget, count, g_CLR_RT_WellKnownTypes.m_String));
+                        CLR_RT_HeapBlock_Array::CreateInstance(refTarget, count, g_CLR_RT_WellKnownTypes.String));
 
                     arrayDst = refTarget.DereferenceArray();
                 }
@@ -1140,7 +1178,7 @@ HRESULT Library_corlib_native_System_String::Concat(CLR_RT_StackFrame &stack, CL
 
     CLR_RT_HeapBlock *ptrSrc;
     const char *szTextSrc;
-    char *szTextDst = NULL;
+    char *szTextDst = nullptr;
     CLR_UINT32 totLen;
     CLR_UINT32 len;
 
@@ -1152,7 +1190,7 @@ HRESULT Library_corlib_native_System_String::Concat(CLR_RT_StackFrame &stack, CL
 
         for (int iStr = 0; iStr < num; iStr++)
         {
-            if (ptrSrc->Dereference() != NULL && ptrSrc->Dereference()->DataType() == DATATYPE_STRING)
+            if (ptrSrc->Dereference() != nullptr && ptrSrc->Dereference()->DataType() == DATATYPE_STRING)
             {
                 szTextSrc = ptrSrc->RecoverString();
 
@@ -1218,7 +1256,7 @@ HRESULT Library_corlib_native_System_String::ConvertToCharArray(
     if (CLR_RT_HeapBlock_Array::CheckRange(startIndex, length, totLength) == false)
         NANOCLR_SET_AND_LEAVE(CLR_E_OUT_OF_RANGE);
 
-    NANOCLR_CHECK_HRESULT(CLR_RT_HeapBlock_Array::CreateInstance(ref, length, g_CLR_RT_WellKnownTypes.m_Char));
+    NANOCLR_CHECK_HRESULT(CLR_RT_HeapBlock_Array::CreateInstance(ref, length, g_CLR_RT_WellKnownTypes.Char));
 
     array = ref.DereferenceArray();
 
@@ -1243,4 +1281,383 @@ HRESULT Library_corlib_native_System_String::ConvertToCharArray(
 {
     NATIVE_PROFILE_CLR_CORE();
     return ConvertToCharArray(stack.Arg0().RecoverString(), ref, array, startIndex, length);
+}
+
+HRESULT Library_corlib_native_System_String::Format___STATIC__STRING__STRING__SZARRAY_OBJECT(CLR_RT_StackFrame &stack)
+{
+    NANOCLR_HEADER();
+
+    const char *format;
+    CLR_RT_HeapBlock_Array *args;
+    char *output = nullptr;
+    const char *p;
+    char negSign[] = "-";
+    char decSep[] = ".";
+
+    // Get format string
+    format = stack.Arg0().RecoverString();
+    FAULT_ON_NULL_ARG(format);
+
+    // Get arguments array
+    args = stack.Arg1().DereferenceArray();
+    FAULT_ON_NULL(args);
+
+    // loop twice: first to calculate length, second to format
+    for (int pass = 0; pass < 2; pass++)
+    {
+        int length = 0;
+        p = format;
+
+        while (*p)
+        {
+            if (*p == '{')
+            {
+                if (p[1] == '{')
+                {
+                    // Escaped brace
+                    if (pass == 1)
+                    {
+                        output[length] = '{';
+                    }
+
+                    length++;
+                    p += 2;
+
+                    continue;
+                }
+
+                // Parse placeholder
+                // Skip '{'
+                p++;
+
+                // Parse index
+                int index = 0;
+                bool hasIndex = false;
+                while (*p >= '0' && *p <= '9')
+                {
+                    index = index * 10 + (*p - '0');
+                    hasIndex = true;
+                    p++;
+                }
+
+                if (!hasIndex)
+                {
+                    NANOCLR_SET_AND_LEAVE(CLR_E_INVALID_PARAMETER);
+                }
+
+                if (index < 0 || index >= (int)args->m_numOfElements)
+                {
+                    NANOCLR_SET_AND_LEAVE(CLR_E_OUT_OF_RANGE);
+                }
+
+                // Parse optional alignment
+                int alignment = 0;
+                if (*p == ',')
+                {
+                    // Skip ','
+                    p++;
+                    bool negative = false;
+
+                    if (*p == '-')
+                    {
+                        negative = true;
+                        p++;
+                    }
+
+                    while (*p >= '0' && *p <= '9')
+                    {
+                        alignment = alignment * 10 + (*p - '0');
+                        p++;
+                    }
+
+                    if (negative)
+                    {
+                        alignment = -alignment;
+                    }
+                }
+
+                // Parse optional format specifier
+                char formatSpec[64] = {0};
+                if (*p == ':')
+                {
+                    // Skip ':'
+                    p++;
+                    int formatSpecLen = 0;
+
+                    while (*p && *p != '}' && formatSpecLen < 63)
+                    {
+                        formatSpec[formatSpecLen++] = *p++;
+                    }
+
+                    formatSpec[formatSpecLen] = '\0';
+                }
+
+                if (*p != '}')
+                {
+                    NANOCLR_SET_AND_LEAVE(CLR_E_INVALID_PARAMETER);
+                }
+
+                // Skip '}'
+                p++;
+
+                // Get and process the argument
+                CLR_RT_HeapBlock *arg = (CLR_RT_HeapBlock *)args->GetElement(index);
+                CLR_RT_HeapBlock *deref = arg->Dereference();
+
+                if (deref == nullptr)
+                {
+                    // this is a NULL object, get the argument itself
+                    deref = arg;
+                }
+
+                NanoCLRDataType dt = deref->DataType();
+
+                if (pass == 0)
+                {
+                    // Pass 0: Calculate length
+                    int argLength = 0;
+
+                    if (dt == DATATYPE_STRING)
+                    {
+                        const char *str = deref->StringText();
+                        argLength = str ? (int)hal_strlen_s(str) : 0;
+                    }
+                    else if (dt == DATATYPE_VALUETYPE)
+                    {
+                        deref = arg->FixBoxingReference();
+                        dt = deref->DataType();
+
+                        if (dt >= DATATYPE_I1 && dt <= DATATYPE_R8)
+                        {
+                            // Conservative estimate
+                            argLength = FORMAT_RESULT_BUFFER_SIZE / 2;
+                        }
+                    }
+                    else if (dt >= DATATYPE_I1 && dt <= DATATYPE_R8)
+                    {
+                        argLength = 64;
+                    }
+
+                    // Account for alignment
+                    int absAlignment = (alignment < 0) ? -alignment : alignment;
+                    if (absAlignment > argLength)
+                    {
+                        argLength = absAlignment;
+                    }
+
+                    length += argLength;
+                }
+                else
+                {
+                    // Pass 1: Format the argument
+                    char argBuffer[FORMAT_RESULT_BUFFER_SIZE] = {0};
+                    const char *argStr = nullptr;
+
+                    if (dt == DATATYPE_STRING)
+                    {
+                        argStr = deref->StringText();
+                        if (!argStr)
+                        {
+                            argStr = "";
+                        }
+                    }
+                    else if (dt == DATATYPE_VALUETYPE)
+                    {
+                        deref = arg->FixBoxingReference();
+                        dt = deref->DataType();
+
+                    process_numeric:
+                        if (dt >= DATATYPE_I1 && dt <= DATATYPE_R8)
+                        {
+                            bool isInteger = (dt >= DATATYPE_I1 && dt <= DATATYPE_U8);
+                            int len = -1;
+
+                            if (formatSpec[0] != '\0')
+                            {
+                                char fmtChar;
+                                int precision;
+
+                                if (Library_corlib_native_System_Number::GetFormatSpec(
+                                        formatSpec,
+                                        isInteger,
+                                        &fmtChar,
+                                        &precision))
+                                {
+                                    switch (fmtChar)
+                                    {
+                                        case 'g':
+                                        case 'G':
+                                            len = Library_corlib_native_System_Number::Format_G(
+                                                argBuffer,
+                                                deref,
+                                                fmtChar,
+                                                precision,
+                                                negSign,
+                                                decSep);
+                                            break;
+
+                                        case 'x':
+                                        case 'X':
+                                            len = Library_corlib_native_System_Number::Format_X(
+                                                argBuffer,
+                                                deref,
+                                                fmtChar,
+                                                precision);
+                                            break;
+
+                                        case 'f':
+                                        case 'F':
+                                        case 'n':
+                                        case 'N':
+                                            // N format is like F but with thousand separators
+                                            // For now, we just use F format since we don't have NumberFormatInfo
+                                            len = Library_corlib_native_System_Number::Format_F(
+                                                argBuffer,
+                                                deref,
+                                                precision,
+                                                negSign,
+                                                decSep);
+                                            break;
+
+                                        case 'd':
+                                        case 'D':
+                                            len = Library_corlib_native_System_Number::Format_D(
+                                                argBuffer,
+                                                deref,
+                                                precision,
+                                                negSign,
+                                                decSep);
+                                            break;
+
+                                        case 'e':
+                                        case 'E':
+                                            len = Library_corlib_native_System_Number::Format_E(
+                                                argBuffer,
+                                                deref,
+                                                precision,
+                                                fmtChar);
+                                            break;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                len = Library_corlib_native_System_Number::Format_G(
+                                    argBuffer,
+                                    deref,
+                                    'G',
+                                    -1,
+                                    negSign,
+                                    decSep);
+                            }
+
+                            if (len > 0)
+                            {
+                                argBuffer[len] = '\0';
+                                argStr = argBuffer;
+                            }
+                            else
+                            {
+                                argStr = "";
+                            }
+                        }
+                        else
+                        {
+                            argStr = "";
+                        }
+                    }
+                    else if (dt >= DATATYPE_I1 && dt <= DATATYPE_R8)
+                    {
+                        goto process_numeric;
+                    }
+                    else
+                    {
+                        argStr = "";
+                    }
+
+                    // apply alignment and write to output
+                    int argLen = (int)hal_strlen_s(argStr);
+                    int absAlignment = (alignment < 0) ? -alignment : alignment;
+
+                    if (absAlignment > argLen)
+                    {
+                        int padding = absAlignment - argLen;
+                        if (alignment > 0)
+                        {
+                            // Right align - pad left
+                            for (int i = 0; i < padding; i++)
+                            {
+                                output[length++] = ' ';
+                            }
+
+                            memcpy(&output[length], argStr, argLen);
+                            length += argLen;
+                        }
+                        else
+                        {
+                            // Left align - pad right
+                            memcpy(&output[length], argStr, argLen);
+                            length += argLen;
+
+                            for (int i = 0; i < padding; i++)
+                            {
+                                output[length++] = ' ';
+                            }
+                        }
+                    }
+                    else
+                    {
+                        memcpy(&output[length], argStr, argLen);
+                        length += argLen;
+                    }
+                }
+            }
+            else if (*p == '}')
+            {
+                if (p[1] == '}')
+                {
+                    // Escaped brace
+                    if (pass == 1)
+                    {
+                        output[length] = '}';
+                    }
+
+                    length++;
+                    p += 2;
+                    continue;
+                }
+                else
+                {
+                    NANOCLR_SET_AND_LEAVE(CLR_E_INVALID_PARAMETER);
+                }
+            }
+            else
+            {
+                // Regular character
+                if (pass == 1)
+                {
+                    output[length] = *p;
+                }
+
+                length++;
+                p++;
+            }
+        }
+
+        if (pass == 0)
+        {
+            // after pass 0: allocate string and get pointer
+            CLR_RT_HeapBlock &blkResult = stack.PushValue();
+            CLR_RT_HeapBlock_String *str = CLR_RT_HeapBlock_String::CreateInstance(blkResult, length);
+            CHECK_ALLOCATION(str);
+            output = (char *)str->StringText();
+        }
+        else
+        {
+            // after pass 1: null terminate the string
+            output[length] = '\0';
+        }
+    }
+
+    NANOCLR_NOCLEANUP();
 }

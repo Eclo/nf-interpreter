@@ -107,7 +107,7 @@ bool CLR_RT_EventCache::VirtualMethodTable::FindVirtualMethod(
         if (m_list_freeItems.IsEmpty())
         {
             en = (LookupEntry *)m_list_inUse.LastNode();
-            if (en->Prev() == NULL)
+            if (en->Prev() == nullptr)
             {
                 //
                 // No node to steal, return.
@@ -190,33 +190,109 @@ void CLR_RT_EventCache::VirtualMethodTable::Callback_Reassign(
 void CLR_RT_EventCache::VirtualMethodTable::Initialize()
 {
     NATIVE_PROFILE_CLR_CORE();
-    CLR_UINT32 idx;
+    CLR_UINT32 index;
 
     m_entries = (Link *)&g_scratchVirtualMethodTableLink[0];
     m_entriesMRU = (Link *)&g_scratchVirtualMethodTableLinkMRU[0];
     m_payloads = (Payload *)&g_scratchVirtualMethodPayload[0];
 
+#ifdef DEBUG
+
+    // DIAGNOSTIC: Verify structure sizes and alignment
+    CLR_Debug::Printf("\r\n========== VirtualMethodTable::Initialize DIAGNOSTICS ==========\r\n");
+    CLR_Debug::Printf("sizeof(Link) = %u, alignof(Link) = %u\r\n", sizeof(Link), alignof(Link));
+    CLR_Debug::Printf("sizeof(Payload) = %u, alignof(Payload) = %u\r\n", sizeof(Payload), alignof(Payload));
+    CLR_Debug::Printf("sizeof(Payload::Key) = %u\r\n", sizeof(Payload::Key));
+    CLR_Debug::Printf("LinkArraySize() = %u (expected: 641)\r\n", LinkArraySize());
+    CLR_Debug::Printf("LinkMRUArraySize() = %u (expected: 513)\r\n", LinkMRUArraySize());
+    CLR_Debug::Printf("PayloadArraySize() = %u (expected: 512)\r\n", PayloadArraySize());
+
+    // Verify array base addresses don't overlap
+    uintptr_t entries_start = (uintptr_t)m_entries;
+    uintptr_t entries_end = entries_start + (LinkArraySize() * sizeof(Link));
+    uintptr_t entriesMRU_start = (uintptr_t)m_entriesMRU;
+    uintptr_t entriesMRU_end = entriesMRU_start + (LinkMRUArraySize() * sizeof(Link));
+    uintptr_t payloads_start = (uintptr_t)m_payloads;
+    uintptr_t payloads_end = payloads_start + (PayloadArraySize() * sizeof(Payload));
+
+#ifdef _WIN64
+
+    CLR_Debug::Printf(
+        "m_entries: 0x%" PRIx64 " - 0x% " PRIx64 " (%u bytes)\r\n",
+        entries_start,
+        entries_end,
+        (unsigned int)(entries_end - entries_start));
+    CLR_Debug::Printf(
+        "m_entriesMRU: 0x%" PRIx64 " - 0x% " PRIx64 " (%u bytes)\r\n",
+        entriesMRU_start,
+        entriesMRU_end,
+        (unsigned int)(entriesMRU_end - entriesMRU_start));
+    CLR_Debug::Printf(
+        "m_payloads:   0x% " PRIx64 " - 0x% " PRIx64 " (%u bytes)\r\n",
+        payloads_start,
+        payloads_end,
+        (unsigned int)(payloads_end - payloads_start));
+
+#else
+
+    CLR_Debug::Printf(
+        "m_entries: 0x%08X - 0x%08X (%u bytes)\r\n",
+        entries_start,
+        entries_end,
+        (unsigned int)(entries_end - entries_start));
+    CLR_Debug::Printf(
+        "m_entriesMRU: 0x%08X - 0x%08X (%u bytes)\r\n",
+        entriesMRU_start,
+        entriesMRU_end,
+        (unsigned int)(entriesMRU_end - entriesMRU_start));
+    CLR_Debug::Printf(
+        "m_payloads:   0x%08X - 0x%08X (%u bytes)\r\n",
+        payloads_start,
+        payloads_end,
+        (unsigned int)(payloads_end - payloads_start));
+
+#endif
+
+    // Check for overlaps
+    if (entries_end > entriesMRU_start && entries_start < entriesMRU_end)
+    {
+        CLR_Debug::Printf("*** WARNING: m_entries and m_entriesMRU OVERLAP! ***\r\n");
+    }
+    if (entries_end > payloads_start && entries_start < payloads_end)
+    {
+        CLR_Debug::Printf("*** WARNING: m_entries and m_payloads OVERLAP! ***\r\n");
+    }
+    if (entriesMRU_end > payloads_start && entriesMRU_start < payloads_end)
+    {
+        CLR_Debug::Printf("*** WARNING: m_entriesMRU and m_payloads OVERLAP! ***\r\n");
+    }
+
+    CLR_Debug::Printf("================================================================\r\n\r\n");
+
+#endif
+
     //
     // Link all the entries to themselves => no elements in the lists.
     //
-    for (idx = 0; idx < LinkArraySize(); idx++)
+    for (index = 0; index < LinkArraySize(); index++)
     {
-        Link &lnk = m_entries[idx];
+        Link &lnk = m_entries[index];
 
-        lnk.m_next = idx;
-        lnk.m_prev = idx;
+        lnk.m_next = index;
+        lnk.m_prev = index;
     }
 
     //
     // Link all the entries to the following one => all the elements are in the MRU list.
     //
     _ASSERTE(LinkMRUArraySize() < 0xFFFF);
-    for (idx = 0; idx < LinkMRUArraySize(); idx++)
-    {
-        Link &lnk = m_entriesMRU[idx];
 
-        lnk.m_next = idx == LinkMRUArraySize() - 1 ? 0 : idx + 1;
-        lnk.m_prev = idx == 0 ? (CLR_UINT16)LinkMRUArraySize() - 1 : idx - 1;
+    for (index = 0; index < LinkMRUArraySize(); index++)
+    {
+        Link &lnk = m_entriesMRU[index];
+
+        lnk.m_next = index == LinkMRUArraySize() - 1 ? 0 : index + 1;
+        lnk.m_prev = index == 0 ? (CLR_UINT16)LinkMRUArraySize() - 1 : index - 1;
     }
 }
 
@@ -227,10 +303,10 @@ bool CLR_RT_EventCache::VirtualMethodTable::FindVirtualMethod(
 {
     NATIVE_PROFILE_CLR_CORE();
     Payload::Key key;
-    CLR_UINT32 idx;
-    CLR_UINT32 idxHead;
-    CLR_UINT32 clsData = cls.m_data;
-    CLR_UINT32 mdVirtualData = mdVirtual.m_data;
+    CLR_UINT32 index;
+    CLR_UINT32 indexHead;
+    CLR_UINT32 clsData = cls.data;
+    CLR_UINT32 mdVirtualData = mdVirtual.data;
 
 #if defined(VIRTUAL_DEVICE)
     bool fVerify = false;
@@ -245,9 +321,9 @@ bool CLR_RT_EventCache::VirtualMethodTable::FindVirtualMethod(
         //
         // Shortcut for terminal virtual methods.
         //
-        if (clsData == instCLS.m_data)
+        if (clsData == instCLS.data)
         {
-            if ((instMD.m_target->flags & CLR_RECORD_METHODDEF::MD_Abstract) == 0)
+            if ((instMD.target->flags & CLR_RECORD_METHODDEF::MD_Abstract) == 0)
             {
                 md = mdVirtual;
 
@@ -260,7 +336,7 @@ bool CLR_RT_EventCache::VirtualMethodTable::FindVirtualMethod(
     if (cls.Assembly() == mdVirtual.Assembly())
     {
         CLR_RT_Assembly *assm = g_CLR_RT_TypeSystem.m_assemblies[mdVirtual.Assembly() - 1];
-        CLR_IDX owner = assm->m_pCrossReference_MethodDef[mdVirtual.Method()].GetOwner();
+        CLR_INDEX owner = assm->crossReferenceMethodDef[mdVirtual.Method()].GetOwner();
 
         if (cls.Type() == owner)
         {
@@ -269,9 +345,9 @@ bool CLR_RT_EventCache::VirtualMethodTable::FindVirtualMethod(
             {
                 CLR_Debug::Printf(
                     "INTERNAL ERROR: Shortcut for terminal virtual methods failed: CLS:%08x:%08x => %08x\r\n",
-                    cls.m_data,
-                    mdVirtual.m_data,
-                    md.m_data);
+                    cls.data,
+                    mdVirtual.data,
+                    md.data);
                 ::DebugBreak();
             }
 #endif
@@ -287,27 +363,50 @@ bool CLR_RT_EventCache::VirtualMethodTable::FindVirtualMethod(
     {
         CLR_Debug::Printf(
             "INTERNAL ERROR: Shortcut for terminal virtual methods failed: CLS:%08x:%08x\r\n",
-            cls.m_data,
-            mdVirtual.m_data);
+            cls.data,
+            mdVirtual.data);
         ::DebugBreak();
     }
 #endif
 
-    key.m_mdVirtual.m_data = mdVirtualData;
-    key.m_cls.m_data = clsData;
+    key.m_mdVirtual.data = mdVirtualData;
+    key.m_cls.data = clsData;
 
-    idxHead = (SUPPORT_ComputeCRC(&key, sizeof(key), 0) % (LinkArraySize() - PayloadArraySize())) + PayloadArraySize();
+    indexHead =
+        (SUPPORT_ComputeCRC(&key, sizeof(key), 0) % (LinkArraySize() - PayloadArraySize())) + PayloadArraySize();
 
-    for (idx = m_entries[idxHead].m_next;; idx = m_entries[idx].m_next)
+    for (index = m_entries[indexHead].m_next;; index = m_entries[index].m_next)
     {
-        if (idx != idxHead)
-        {
-            Payload &res = m_payloads[idx];
+#if defined(DEBUG) && defined(_WIN64)
+        CLR_Debug::Printf("  Loop: index=%u, indexHead=%u\r\n", index, indexHead);
+#endif
 
-            if (res.m_key.m_mdVirtual.m_data != mdVirtualData)
+        // validate index before using it to prevent crashes from corrupted data
+        if (index >= LinkArraySize())
+        {
+            // !! corrupted index detected !!
+            // // repair the hash chain and treat as cache miss
+            m_entries[indexHead].m_next = indexHead;
+            m_entries[indexHead].m_prev = indexHead;
+
+            index = indexHead;
+        }
+
+        if (index != indexHead)
+        {
+            _ASSERTE(index < PayloadArraySize());
+
+            Payload &res = m_payloads[index];
+
+            if (res.m_key.m_mdVirtual.data != mdVirtualData)
+            {
                 continue;
-            if (res.m_key.m_cls.m_data != clsData)
+            }
+
+            if (res.m_key.m_cls.data != clsData)
+            {
                 continue;
+            }
 
             md = res.m_md;
 
@@ -316,11 +415,21 @@ bool CLR_RT_EventCache::VirtualMethodTable::FindVirtualMethod(
         else
         {
             if (g_CLR_RT_TypeSystem.FindVirtualMethodDef(cls, mdVirtual, md) == false)
+            {
                 return false;
+            }
 
-            idx = GetNewEntry();
+            index = GetNewEntry();
 
-            Payload &res = m_payloads[idx];
+#if defined(DEBUG) && defined(_WIN64)
+            CLR_Debug::Printf("  GetNewEntry returned: %u\r\n", index);
+#endif
+
+            // initialize the entry's links before use to prevent corruption
+            m_entries[index].m_next = index;
+            m_entries[index].m_prev = index;
+
+            Payload &res = m_payloads[index];
 
             res.m_md = md;
             res.m_key = key;
@@ -329,20 +438,20 @@ bool CLR_RT_EventCache::VirtualMethodTable::FindVirtualMethod(
         }
     }
 
-    MoveEntryToTop(m_entries, idxHead, idx);
-    MoveEntryToTop(m_entriesMRU, LinkMRUArraySize() - 1, idx);
+    MoveEntryToTop(m_entries, indexHead, index);
+    MoveEntryToTop(m_entriesMRU, LinkMRUArraySize() - 1, index);
 
     return true;
 }
 
-void CLR_RT_EventCache::VirtualMethodTable::MoveEntryToTop(Link *entries, CLR_UINT32 slot, CLR_UINT32 idx)
+void CLR_RT_EventCache::VirtualMethodTable::MoveEntryToTop(Link *entries, CLR_UINT32 slot, CLR_UINT32 index)
 {
     NATIVE_PROFILE_CLR_CORE();
     Link &list = entries[slot];
 
-    if (list.m_next != idx)
+    if (list.m_next != index)
     {
-        Link &node = entries[idx];
+        Link &node = entries[index];
         CLR_UINT32 next;
         CLR_UINT32 prev;
 
@@ -363,8 +472,8 @@ void CLR_RT_EventCache::VirtualMethodTable::MoveEntryToTop(Link *entries, CLR_UI
         node.m_next = next;
         node.m_prev = slot;
 
-        list.m_next = idx;
-        entries[next].m_prev = idx;
+        list.m_next = index;
+        entries[next].m_prev = index;
     }
 }
 
@@ -400,7 +509,7 @@ void CLR_RT_EventCache::EventCache_Initialize()
     {
         m_inlineBufferStart[i].m_pNext = &m_inlineBufferStart[i + 1];
     }
-    m_inlineBufferStart[num].m_pNext = NULL;
+    m_inlineBufferStart[num].m_pNext = nullptr;
 #endif
 }
 
@@ -453,7 +562,7 @@ CLR_RT_HeapBlock *CLR_RT_EventCache::Extract_Node_Slow(CLR_UINT32 dataType, CLR_
 {
     NATIVE_PROFILE_CLR_CORE();
     CLR_RT_HeapBlock_Node *node;
-    CLR_RT_HeapBlock_Node *best = NULL;
+    CLR_RT_HeapBlock_Node *best = nullptr;
     CLR_UINT32 bestSize = 0;
 
     NANOCLR_FOREACH_NODE(CLR_RT_HeapBlock_Node, ptr, m_events[0].m_blocks)
@@ -608,7 +717,7 @@ bool CLR_RT_EventCache::FindVirtualMethod(
 #ifndef NANOCLR_NO_IL_INLINE
 bool CLR_RT_EventCache::GetInlineFrameBuffer(CLR_RT_InlineBuffer **ppBuffer)
 {
-    if (m_inlineBufferStart != NULL)
+    if (m_inlineBufferStart != nullptr)
     {
         *ppBuffer = m_inlineBufferStart;
 
@@ -617,7 +726,7 @@ bool CLR_RT_EventCache::GetInlineFrameBuffer(CLR_RT_InlineBuffer **ppBuffer)
         return true;
     }
 
-    *ppBuffer = NULL;
+    *ppBuffer = nullptr;
 
     return false;
 }

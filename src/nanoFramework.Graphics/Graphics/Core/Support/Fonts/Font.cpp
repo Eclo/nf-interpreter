@@ -97,12 +97,13 @@ HRESULT CLR_GFX_Font::CreateInstance(CLR_RT_HeapBlock &ref, const CLR_UINT8 *dat
     bm = (const CLR_GFX_BitmapDescription *)data;
     data += sizeof(CLR_GFX_BitmapDescription);
 
-    NANOCLR_CHECK_HRESULT(CLR_RT_HeapBlock_BinaryBlob::CreateInstance(
-        ref,
-        sizeof(CLR_GFX_Font),
-        NULL,
-        CLR_GFX_Font::RelocationHandler,
-        CLR_RT_HeapBlock::HB_CompactOnFailure));
+    NANOCLR_CHECK_HRESULT(
+        CLR_RT_HeapBlock_BinaryBlob::CreateInstance(
+            ref,
+            sizeof(CLR_GFX_Font),
+            NULL,
+            CLR_GFX_Font::RelocationHandler,
+            CLR_RT_HeapBlock::HB_CompactOnFailure));
 
     blob = ref.DereferenceBinaryBlob();
     font = (CLR_GFX_Font *)blob->GetData();
@@ -155,16 +156,19 @@ int CLR_GFX_Font::StringOut(
     CLR_UINT16 buf[3];
     CLR_UINT32 nTotWidth = 0;
     CLR_GFX_FontCharacterInfo chr;
+    CLR_UINT32 charLimit = (maxChars < 0) ? (CLR_UINT32)uh.CountNumberOfCharacters() : (CLR_UINT32)maxChars;
 
     yPos += m_font.m_metrics.m_offset;
 
-    while (maxChars-- != 0)
+    while (charLimit-- != 0)
     {
         uh.m_outputUTF16 = buf;
         uh.m_outputUTF16_size = MAXSTRLEN(buf);
 
         if (uh.ConvertFromUTF8(1, false) == false)
+        {
             break;
+        }
 
         CLR_UINT16 c = buf[0];
 
@@ -300,7 +304,7 @@ void CLR_GFX_Font::DrawChar(
     }
     else
     {
-        param.antiAlias = NULL;
+        param.antiAlias = nullptr;
         config = PAL_GFX_Bitmap::c_SetPixelsConfig_Clip;
     }
     bitmap->SetPixelsHelper(rect, config, &DrawCharHelper, &param);
@@ -317,7 +321,7 @@ void CLR_GFX_Font::CountCharactersInWidth(
 {
     CLR_RT_UnicodeHelper uh;
     CLR_UINT16 buf[3];
-    LPCSTR breakPoint = NULL;
+    LPCSTR breakPoint = nullptr;
     CLR_UINT16 lastChar = 0;
     int breakWidth = 0;
     int breakIndex = 0;
@@ -325,13 +329,17 @@ void CLR_GFX_Font::CountCharactersInWidth(
     CLR_GFX_FontCharacterInfo chr;
     totWidth = 0;
     uh.SetInputUTF8(str);
-    while (maxChars != 0)
+    CLR_UINT32 charLimit = (maxChars < 0) ? (CLR_UINT32)uh.CountNumberOfCharacters() : (CLR_UINT32)maxChars;
+
+    while (charLimit-- > 0)
     {
         uh.m_outputUTF16 = buf;
         uh.m_outputUTF16_size = MAXSTRLEN(buf);
 
         if (uh.ConvertFromUTF8(1, false) == false)
+        {
             break;
+        }
 
         CLR_UINT16 c = buf[0];
         bool fNewLine = (c == '\n');
@@ -385,7 +393,6 @@ void CLR_GFX_Font::CountCharactersInWidth(
         totWidth += chrWidth;
 
         str = (LPCSTR)uh.m_inputUTF8;
-        maxChars--;
         num++;
 
         // Break @ hyphens
@@ -468,7 +475,7 @@ void CLR_GFX_Font::GetCharInfo(CLR_UINT16 c, CLR_GFX_FontCharacterInfo &chrEx)
             }
             else
             {
-                chrEx.antiAlias = NULL;
+                chrEx.antiAlias = nullptr;
                 chrEx.iAntiAlias = 1;
             }
         }

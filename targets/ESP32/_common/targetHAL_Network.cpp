@@ -103,7 +103,7 @@ static void initialize_sntp()
         .server_from_dhcp = false,
         .wait_for_sync = true,
         .start = true,
-        .sync_cb = NULL,
+        .sync_cb = nullptr,
         .renew_servers_after_new_IP = false,
         .ip_event_to_renew = (ip_event_t)0,
         .index_of_first_server = 0,
@@ -152,7 +152,7 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
     ets_printf("Event %d, ID: %d\n", event_base, event_id);
 #endif
 
-#if defined(CONFIG_SOC_WIFI_SUPPORTED)
+#if defined(CONFIG_SOC_WIFI_SUPPORTED) || defined(CONFIG_SOC_WIRELESS_HOST_SUPPORTED)
     if (event_base == WIFI_EVENT)
     {
         switch (event_id)
@@ -373,6 +373,26 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
 #ifdef PRINT_NET_EVENT
                 ets_printf("ETHERNET_EVENT_CONNECTED\n");
 #endif
+                // Make sure configuration is correct
+                result = NF_ESP32_ConfigureNetworkByConfigIndex(IDF_ETH_DEF);
+                if (result != ESP_OK)
+                {
+#ifdef PRINT_NET_EVENT
+                    ets_printf("Failed to configure network for ethernet on connect: %d\n", result);
+#endif
+                }
+
+#if LWIP_IPV6
+                {
+                    // Create IPV6 link local address for ETH interface                
+                    struct netif *netif = esp_netif_get_handle_from_ifkey("ETH_DEF")->lwip_netif;
+                    if (netif != NULL)
+                    {
+                        netif_create_ip6_linklocal_address(netif, 1);
+                    }
+                }
+#endif
+
                 PostAvailabilityOn(IDF_ETH_DEF);
                 break;
 
@@ -514,23 +534,23 @@ void nanoHAL_Network_Initialize()
     {
         ESP_ERROR_CHECK(result);
 
-#if defined(CONFIG_SOC_WIFI_SUPPORTED)
+#if defined(CONFIG_SOC_WIFI_SUPPORTED) || defined(CONFIG_SOC_WIRELESS_HOST_SUPPORTED)
         // register the handler for WIFI events
-        ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL, NULL));
+        ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, nullptr, nullptr));
 #endif
 
         // register the event handler for IP events
-        ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL, NULL));
+        ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, ESP_EVENT_ANY_ID, &event_handler, nullptr, nullptr));
 
 #ifdef ESP32_ETHERNET_SUPPORT
         // register the event handler for Ethernet events
-        ESP_ERROR_CHECK(esp_event_handler_instance_register(ETH_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL, NULL));
+        ESP_ERROR_CHECK(esp_event_handler_instance_register(ETH_EVENT, ESP_EVENT_ANY_ID, &event_handler, nullptr, nullptr));
 #endif
 
 #if HAL_USE_THREAD == TRUE
         // register the event handler for OpenThread events
         ESP_ERROR_CHECK(
-            esp_event_handler_instance_register(OPENTHREAD_EVENT, ESP_EVENT_ANY_ID, &thread_event_handler, NULL, NULL));
+            esp_event_handler_instance_register(OPENTHREAD_EVENT, ESP_EVENT_ANY_ID, &thread_event_handler, nullptr, nullptr));
 #endif
     }
 }

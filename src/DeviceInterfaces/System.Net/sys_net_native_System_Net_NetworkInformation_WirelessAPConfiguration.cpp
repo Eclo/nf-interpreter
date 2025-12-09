@@ -52,7 +52,7 @@ HRESULT Library_sys_net_native_System_Net_NetworkInformation_WirelessAPConfigura
 
     // create new object for configuration
     NANOCLR_CHECK_HRESULT(
-        g_CLR_RT_ExecutionEngine.NewObjectFromIndex(top, g_CLR_RT_WellKnownTypes.m_WirelessAPConfiguration));
+        g_CLR_RT_ExecutionEngine.NewObjectFromIndex(top, g_CLR_RT_WellKnownTypes.WirelessAPConfiguration));
 
     // load from stack
     pConfig = top.Dereference();
@@ -94,12 +94,12 @@ HRESULT Library_sys_net_native_System_Net_NetworkInformation_WirelessAPConfigura
 
     HAL_Configuration_WirelessAP config;
     CLR_RT_HeapBlock *pConfig = stack.Arg0().Dereference();
-    _ASSERTE(pConfig != NULL);
+    _ASSERTE(pConfig != nullptr);
 
     CLR_UINT32 configurationIndex = pConfig[FIELD___apConfigurationIndex].NumericByRefConst().u4;
 
-    CLR_RT_HeapBlock_String *hbPassword = NULL;
-    CLR_RT_HeapBlock_String *hbSsid = NULL;
+    CLR_RT_HeapBlock_String *hbPassword = nullptr;
+    CLR_RT_HeapBlock_String *hbSsid = nullptr;
     CLR_UINT32 ssidLength;
     CLR_UINT32 passwordLength;
 
@@ -165,7 +165,7 @@ HRESULT Library_sys_net_native_System_Net_NetworkInformation_WirelessAPConfigura
     NativeGetConnectedClients___STATIC__SZARRAY_SystemNetNetworkInformationWirelessAPStation__I4(
         CLR_RT_StackFrame &stack)
 {
-#if defined(PLATFORM_ESP32) && !defined(CONFIG_IDF_TARGET_ESP32H2)
+#if defined(CONFIG_SOC_WIFI_SUPPORTED) || defined(CONFIG_SOC_WIRELESS_HOST_SUPPORTED)
     NANOCLR_HEADER();
 
     CLR_RT_TypeDef_Index apStationTypeDef;
@@ -224,10 +224,12 @@ HRESULT Library_sys_net_native_System_Net_NetworkInformation_WirelessAPConfigura
                 // dereference the object in order to reach its fields
                 hbObj = apStation->Dereference();
 
-                NANOCLR_CHECK_HRESULT(CLR_RT_HeapBlock_Array::CreateInstance(
-                    hbObj[Library_sys_net_native_System_Net_NetworkInformation_WirelessAPStation::FIELD___macAddress],
-                    6,
-                    g_CLR_RT_WellKnownTypes.m_UInt8));
+                NANOCLR_CHECK_HRESULT(
+                    CLR_RT_HeapBlock_Array::CreateInstance(
+                        hbObj[Library_sys_net_native_System_Net_NetworkInformation_WirelessAPStation::
+                                  FIELD___macAddress],
+                        6,
+                        g_CLR_RT_WellKnownTypes.UInt8));
                 memcpy(
                     hbObj[Library_sys_net_native_System_Net_NetworkInformation_WirelessAPStation::FIELD___macAddress]
                         .DereferenceArray()
@@ -263,7 +265,7 @@ HRESULT Library_sys_net_native_System_Net_NetworkInformation_WirelessAPConfigura
 HRESULT Library_sys_net_native_System_Net_NetworkInformation_WirelessAPConfiguration::
     NativeDeauthStation___STATIC__STRING__I4(CLR_RT_StackFrame &stack)
 {
-#if defined(PLATFORM_ESP32) && !defined(CONFIG_IDF_TARGET_ESP32H2)
+#if defined(CONFIG_SOC_WIFI_SUPPORTED) || defined(CONFIG_SOC_WIRELESS_HOST_SUPPORTED)
     NANOCLR_HEADER();
 
     uint16_t index = (uint16_t)stack.Arg0().NumericByRef().u4;

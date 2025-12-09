@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright (c) .NET Foundation and Contributors
 // See LICENSE file in the project root for full license information.
 //
@@ -11,7 +11,7 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_Directory::NativeGetChildren___ST
     NATIVE_PROFILE_CLR_IO();
     NANOCLR_HEADER();
 
-    FileSystemVolume *driver = NULL;
+    FileSystemVolume *driver = nullptr;
     char *path;
     bool isDirectory;
     char rootNameBuffer[FS_NAME_MAXLENGTH + 1];
@@ -21,7 +21,7 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_Directory::NativeGetChildren___ST
     uint32_t rootNameLength = -1;
     bool found = false;
     bool *foundP = &found;
-    void *findHandle = NULL;
+    void *findHandle = nullptr;
     int32_t itemsCount = 0;
     FS_FILEINFO fileData;
 
@@ -75,7 +75,7 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_Directory::NativeGetChildren___ST
                 const char *fileName = (const char *)fileData.FileName;
                 const char *extension = strrchr(fileName, '.');
 
-                if (extension == NULL || strcmp(extension, ".sys") != 0)
+                if (extension == nullptr || strcmp(extension, ".sys") != 0)
                 {
                     // file does not have a .sys extension, maybe OK to add to list
                     // now check other attributes
@@ -92,7 +92,7 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_Directory::NativeGetChildren___ST
         }
 
         // free memory for the file name
-        if (fileData.FileName != NULL)
+        if (fileData.FileName != nullptr)
         {
             platform_free(fileData.FileName);
         }
@@ -104,7 +104,7 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_Directory::NativeGetChildren___ST
 
     // create an array of files paths <String>
     NANOCLR_CHECK_HRESULT(
-        CLR_RT_HeapBlock_Array::CreateInstance(top, (CLR_UINT32)itemsCount, g_CLR_RT_WellKnownTypes.m_String));
+        CLR_RT_HeapBlock_Array::CreateInstance(top, (CLR_UINT32)itemsCount, g_CLR_RT_WellKnownTypes.String));
 
     // 2nd pass to fill the array
     driver->FindOpen(path, findHandle);
@@ -123,13 +123,12 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_Directory::NativeGetChildren___ST
         {
             // skip entries that are not directories when looking for directories
             // skip also directories with hidden and system attribute
-            if (isDirectory &&
-                ((fileData.Attributes & FileAttributes::FileAttributes_Directory) !=
-                 FileAttributes::FileAttributes_Directory) &&
-                ((fileData.Attributes & FileAttributes::FileAttributes_Hidden) !=
-                 FileAttributes::FileAttributes_Hidden) &&
-                ((fileData.Attributes & FileAttributes::FileAttributes_System) !=
-                 FileAttributes::FileAttributes_System))
+            if (isDirectory && !(((fileData.Attributes & FileAttributes::FileAttributes_Directory) ==
+                                  FileAttributes::FileAttributes_Directory) &&
+                                 ((fileData.Attributes & FileAttributes::FileAttributes_Hidden) !=
+                                  FileAttributes::FileAttributes_Hidden) &&
+                                 ((fileData.Attributes & FileAttributes::FileAttributes_System) !=
+                                  FileAttributes::FileAttributes_System)))
             {
                 continue;
             }
@@ -143,7 +142,7 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_Directory::NativeGetChildren___ST
             {
                 const char *fileName = (const char *)fileData.FileName;
                 const char *extension = strrchr(fileName, '.');
-                if (extension != NULL && strcmp(extension, ".sys") == 0)
+                if (extension != nullptr && strcmp(extension, ".sys") == 0)
                 {
                     // file has a .sys extension, skip it
                     continue;
@@ -151,7 +150,7 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_Directory::NativeGetChildren___ST
 
                 // check for hidden and system attributes
                 if (((fileData.Attributes & FileAttributes::FileAttributes_Hidden) ==
-                     FileAttributes::FileAttributes_Hidden) &&
+                     FileAttributes::FileAttributes_Hidden) ||
                     ((fileData.Attributes & FileAttributes::FileAttributes_System) ==
                      FileAttributes::FileAttributes_System))
                 {
@@ -176,7 +175,7 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_Directory::NativeGetChildren___ST
         }
 
         // free memory for the file name
-        if (fileData.FileName != NULL)
+        if (fileData.FileName != nullptr)
         {
             platform_free(fileData.FileName);
         }
@@ -185,14 +184,14 @@ HRESULT Library_nf_sys_io_filesystem_System_IO_Directory::NativeGetChildren___ST
 
     NANOCLR_CLEANUP();
 
-    // close find handle (watch out for NULL handle)
-    if (findHandle != NULL)
+    // close find handle (watch out for nullptr handle)
+    if (findHandle != nullptr)
     {
         driver->FindClose(findHandle);
     }
 
     // free memory for the file name
-    if (fileData.FileName != NULL)
+    if (fileData.FileName != nullptr)
     {
         platform_free(fileData.FileName);
     }

@@ -49,6 +49,7 @@ set(NF_CoreCLR_SRCS
     CLR_RT_HeapBlock_Delegate.cpp
     CLR_RT_HeapBlock_Delegate_List.cpp
     CLR_RT_HeapBlock_Finalizer.cpp
+    CLR_RT_HeapBlock_GenericInstance.cpp
     CLR_RT_HeapBlock_Lock.cpp
     CLR_RT_HeapBlock_LockRequest.cpp
     CLR_RT_HeapBlock_Node.cpp
@@ -105,11 +106,14 @@ set(NF_CoreCLR_SRCS
     corlib_native_System_Number.cpp
     corlib_native_System_Object.cpp
     corlib_native_System_Random.cpp
+    corlib_native_System_ReadOnlySpan_1.cpp
     corlib_native_System_Reflection_Binder.cpp
     corlib_native_System_Reflection_MemberInfo.cpp
     corlib_native_System_Runtime_CompilerServices_RuntimeHelpers.cpp
+    corlib_native_System_Runtime_CompilerServices_Unsafe.cpp
     corlib_native_System_Runtime_Remoting_RemotingServices.cpp
     corlib_native_System_String.cpp
+    corlib_native_System_Span_1.cpp
     corlib_native_System_Threading_AutoResetEvent.cpp
     corlib_native_System_Threading_Interlocked.cpp
     corlib_native_System_Threading_ManualResetEvent.cpp
@@ -128,8 +132,7 @@ set(NF_CoreCLR_SRCS
 
     # Runtime.Native
     nf_rt_native.cpp
-    nf_rt_native_nanoFramework_Runtime_Hardware_SystemInfo.cpp
-    nf_rt_native_nanoFramework_Runtime_Native_GC.cpp
+    nf_rt_native_nanoFramework_Runtime_Native_SystemInfo.cpp
     nf_rt_native_nanoFramework_Runtime_Native_ExecutionConstraint.cpp
     nf_rt_native_nanoFramework_Runtime_Native_Power.cpp
     nf_rt_native_nanoFramework_Runtime_Native_Rtc_stubs.cpp

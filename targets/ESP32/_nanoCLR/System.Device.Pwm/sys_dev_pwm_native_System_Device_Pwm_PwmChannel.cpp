@@ -172,7 +172,7 @@ HRESULT sys_dev_pwm_native_System_Device_Pwm_PwmChannelHelpers::ConfigureAndStar
     // Work out the duty Cycle for the current duty resolution
     dutyCycle = CalculateDuty(timerId, dutyCycle);
 
-    ledc_conf = {pinNumber, mode, channel, LEDC_INTR_DISABLE, timer_sel, dutyCycle, 0, (unsigned int)polarity};
+    ledc_conf = {pinNumber, mode, channel, LEDC_INTR_DISABLE, timer_sel, dutyCycle, 0, LEDC_SLEEP_MODE_NO_ALIVE_NO_PD, (unsigned int)polarity};
 
     // Configure Channel which will also start it
     IDF_ERROR(ledc_channel_config(&ledc_conf));
@@ -238,7 +238,7 @@ HRESULT Library_sys_dev_pwm_native_System_Device_Pwm_PwmChannel::NativeInit___VO
 
     NANOCLR_HEADER();
 
-    // get a pointer to the managed object instance and check that it's not NULL
+    // get a pointer to the managed object instance and check that it's not nullptr
     CLR_RT_HeapBlock *pThis = stack.This();
     FAULT_ON_NULL(pThis);
 
@@ -278,7 +278,7 @@ HRESULT Library_sys_dev_pwm_native_System_Device_Pwm_PwmChannel::NativeSetDesire
 
     NANOCLR_HEADER();
 
-    // get a pointer to the managed object instance and check that it's not NULL
+    // get a pointer to the managed object instance and check that it's not nullptr
     CLR_RT_HeapBlock *pThis = stack.This();
     FAULT_ON_NULL(pThis);
 
@@ -359,7 +359,7 @@ HRESULT Library_sys_dev_pwm_native_System_Device_Pwm_PwmChannel::NativeSetActive
 
     NANOCLR_HEADER();
 
-    // get a pointer to the managed object instance and check that it's not NULL
+    // get a pointer to the managed object instance and check that it's not nullptr
     CLR_RT_HeapBlock *pThis = stack.This();
     FAULT_ON_NULL(pThis);
 
@@ -429,7 +429,7 @@ HRESULT Library_sys_dev_pwm_native_System_Device_Pwm_PwmChannel::NativeStop___VO
 
     NANOCLR_HEADER();
 
-    // get a pointer to the managed object instance and check that it's not NULL
+    // get a pointer to the managed object instance and check that it's not nullptr
     CLR_RT_HeapBlock *pThis = stack.This();
     FAULT_ON_NULL(pThis);
 

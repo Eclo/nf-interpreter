@@ -3,6 +3,9 @@
 // See LICENSE file in the project root for full license information.
 //
 
+// ESP32-P4 doesn't currently have smartconfig support
+#if !defined(CONFIG_SOC_WIRELESS_HOST_SUPPORTED)
+
 #include <nanoHAL.h>
 #include <esp_smartconfig.h>
 
@@ -78,7 +81,7 @@ void smartconfig_task(void *parm)
     ESP_ERROR_CHECK(esp_smartconfig_start(&cfg));
 
     sc_wifi_event_group = xEventGroupCreate();
-    ESP_ERROR_CHECK(esp_event_handler_register(SC_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(SC_EVENT, ESP_EVENT_ANY_ID, &event_handler, nullptr));
 
     while (1)
     {
@@ -92,12 +95,14 @@ void smartconfig_task(void *parm)
 
             vEventGroupDelete(sc_wifi_event_group);
 
-            vTaskDelete(NULL);
+            vTaskDelete(nullptr);
         }
     }
 }
 
 void NF_ESP32_Start_wifi_smart_config(void)
 {
-    xTaskCreate(smartconfig_task, "smartconfig_task", 4096, NULL, 3, NULL);
+    xTaskCreate(smartconfig_task, "smartconfig_task", 4096, nullptr, 3, nullptr);
 }
+
+#endif
